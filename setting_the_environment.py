@@ -13,39 +13,35 @@ def attenuation_factor(f, d, k, D, A):
 class AUVEnvironment(gym.Env):
     def __init__(self):
         super(AUVEnvironment, self).__init__()
-
-        # Define action and observation spaces
-        self.action_space = spaces.Discrete(7)  # 6 directions + select sensor node
-        self.observation_space = spaces.Box(low=-5, high=5, shape=(5,))
-        self.max_steps=50
-        # Initialize AUV position and sensor node positions
-        self.auv_position = np.array([0, 0, 0])
+        self.auv_position = np.array([3, 3, 3])
         self.sensor_node_positions = [
-            np.array([5, 0, 0]),
-            np.array([0, 5, 0]),
-            np.array([0, 0, 5]),
-            np.array([-2, 2, -2]),
-            np.array([2, -2, 2])
+            np.array([1, 1, 1]),
+            np.array([5, 5, 5]),
+            np.array([2, 5, 5]),
+            np.array([5, 2, 2]),
+            np.array([4, 4, 4])
         ]
+        self.action_space = spaces.Tuple((spaces.Discrete(6), spaces.Discrete(5)))  # 6 directions + 5 select sensor node actions
+        self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
+        self.max_steps=50
+        
 
     def step(self, action):
         reward=0
-        # Execute action
-        if action < 6:
+        direction,selection_node=action
+        
             # Move AUV in one of the six directions
-            self.auv_position += np.array([
-                1 if action == 0 else -1 if action == 1 else 0,
-                1 if action == 2 else -1 if action == 3 else 0,
-                1 if action == 4 else -1 if action == 5 else 0
+        self.auv_position += np.array([
+                1 if direction == 0 else -1 if direction == 1 else 0,
+                1 if direction == 2 else -1 if direction == 3 else 0,
+                1 if direction == 4 else -1 if direction == 5 else 0
             ])
-            self.auv_position = np.clip(self.auv_position, -5, 5)
-        else:
-            selected_sensor_node_index = np.random.randint(len(self.sensor_node_positions))
-            selected_sensor_node = self.sensor_node_positions[selected_sensor_node_index]
-            # Compute received power (you need to define this calculation based on your requirements)
-            received_power = self.compute_received_power(selected_sensor_node)
+        self.auv_position = np.clip(self.auv_position, -5, 5)
+        
+        selected_sensor_node = self.sensor_node_positions[selection_node]
+        received_power = self.compute_received_power(selected_sensor_node)
             # Compute reward
-            reward = np.sum(received_power)
+        reward = np.sum(received_power)
 
         # Update state
         state = self._get_observation()
@@ -77,7 +73,7 @@ class AUVEnvironment(gym.Env):
     
     def compute_received_power(self, sensor_node_position):
          # Constants
-        f = 100  # Frequency (MHz)
+        f = 100  # Frequency (KHz)
         k = 1.5  # Constant for attenuation calculation
         A = 0    # Constant for attenuation calculation
         D=100

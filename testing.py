@@ -37,14 +37,18 @@ num_steps = 20
 total_reward = 0
 for _ in range(num_steps):
     action = env.action_space.sample()
+    direction,selected_node=action
     next_state, reward, _ = env.step(action)
     total_reward += reward
+    env.render()
     print("Step:", _, "Reward:", reward)
-
+    print("pos of auv",env.auv_position)
+    print("direction",direction)
+    print("node selected",selected_node)
     # Store AUV position for plotting
     auv_positions.append(env.auv_position)
 
-auv_positions = np.array(auv_positions)
+"""auv_positions = np.array(auv_positions)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.plot(auv_positions[:, 0], auv_positions[:, 1], auv_positions[:, 2], marker='o', label='AUV')
@@ -60,6 +64,6 @@ plt.show()
 # Print total reward obtained in the episode
 print("Total Reward:", total_reward)
 print("nbm actions",env.action_space)
-
+"""
 # Close the environment
 env.close()

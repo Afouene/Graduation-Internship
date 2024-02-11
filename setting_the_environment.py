@@ -1,18 +1,25 @@
 import gym
 from gym import spaces
 import numpy as np
-
+import pygame
 def attenuation_factor(f, d, k, D, A):
         alfa_modelHOP = (0.11*(f**2/(f**2+1))
             +44*(f**2/(f**2+4100))+2.75*pow(10,-4)*pow(f,2)+
             0.003)*pow(10,-3)
         A_D_val = alfa_modelHOP * (1 - 1.93*pow(10,-5) * D)
-        log_d = np.where(d < 1, 0, np.log10(d))
+        log_d = np.where(d < 1, 0, np.log10(100*(d+1)))
         return k * log_d + d * A_D_val + A
     
 class AUVEnvironment(gym.Env):
     def __init__(self):
         super(AUVEnvironment, self).__init__()
+        self.window_size = 600 # Set the window size
+        self.render_mode = "human"  # Set the render mode (can be "human" or "rgb_array")
+        self.metadata = {"render_fps": 30}  # Set the rendering frames per second
+        self.screen = None
+        self.clock = None
+        self.render_mode = "human"  # Set the render mode (can be "human" or "rgb_array")
+        self.metadata = {"render_fps": 30}  # Set the rendering frames per second
         self.auv_position = np.array([3, 3, 3])
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
@@ -36,7 +43,7 @@ class AUVEnvironment(gym.Env):
                 1 if direction == 2 else -1 if direction == 3 else 0,
                 1 if direction == 4 else -1 if direction == 5 else 0
             ])
-        self.auv_position = np.clip(self.auv_position, -5, 5)
+        self.auv_position = np.clip(self.auv_position, 1, 5)
         
         selected_sensor_node = self.sensor_node_positions[selection_node]
         received_power = self.compute_received_power(selected_sensor_node)
@@ -58,9 +65,6 @@ class AUVEnvironment(gym.Env):
         # Return initial state
         return self._get_observation()
 
-    def render(self, mode='human'):
-        # Implement visualization if needed
-        pass
 
     def _get_observation(self):
         received_powers = np.array([self.compute_received_power(sensor_node_pos) for sensor_node_pos in self.sensor_node_positions])
@@ -90,3 +94,50 @@ class AUVEnvironment(gym.Env):
     def close(self):
         # Clean up resources if needed
         pass
+    def render(self):
+        if self.render_mode == "rgb_array":
+            return self._render_frame()
+
+        if self.screen is None and self.render_mode == "human":
+            pygame.init()
+            pygame.display.init()
+            self.screen = pygame.display.set_mode((self.window_size, self.window_size))
+        if self.clock is None and self.render_mode == "human":
+            self.clock = pygame.time.Clock()
+
+        # Draw your environment elements here
+        self.screen.fill((255, 255, 255))
+
+    # Draw grid lines
+        cell_size = self.window_size // 5
+        for i in range(6):
+            pygame.draw.line(self.screen, (200, 200, 200), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
+            pygame.draw.line(self.screen, (200, 200, 200), (0, i * cell_size), (self.window_size, i * cell_size), 1)
+
+    # Draw AUV
+        auv_position = self.auv_position
+        auv_x = (auv_position[0] - 1) * cell_size + cell_size // 2
+        auv_y = (auv_position[1] - 1) * cell_size + cell_size // 2
+        pygame.draw.circle(self.screen, (0, 0, 255), (auv_x, auv_y), cell_size // 4)
+
+    # Draw sensor nodes
+        for sensor_node_pos in self.sensor_node_positions:
+            node_x = (sensor_node_pos[0] - 1) * cell_size + cell_size // 2
+            node_y = (sensor_node_pos[1] - 1) * cell_size + cell_size // 2
+            pygame.draw.rect(self.screen, (255, 0, 0), pygame.Rect(node_x - cell_size // 8, node_y - cell_size // 8, cell_size // 4, cell_size // 4))
+
+        pygame.display.update()
+
+
+        if self.render_mode == "human":
+            pygame.event.pump()
+            self.clock.tick(self.metadata["render_fps"])
+            pygame.time.delay(600) 
+
+    def _render_frame(self):
+        canvas = pygame.Surface((self.window_size, self.window_size))
+        canvas.fill((255, 255, 255))
+
+        # Draw your environment elements here
+
+        return np.transpose(np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2))

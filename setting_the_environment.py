@@ -13,14 +13,12 @@ def attenuation_factor(f, d, k, D, A):
 class AUVEnvironment(gym.Env):
     def __init__(self):
         super(AUVEnvironment, self).__init__()
-        self.window_size = 600 # Set the window size
-        self.render_mode = "human"  # Set the render mode (can be "human" or "rgb_array")
-        self.metadata = {"render_fps": 30}  # Set the rendering frames per second
+        self.window_size = 500 #  the window size
+        self.render_mode = "human"  # because we need real time visualization the render mode is human
+        self.metadata = {"render_fps": 30}  
         self.screen = None
         self.clock = None
-        self.render_mode = "human"  # Set the render mode (can be "human" or "rgb_array")
-        self.metadata = {"render_fps": 30}  # Set the rendering frames per second
-        self.auv_position = np.array([3, 3, 3])
+        self.auv_position = np.array([3, 3, 3]) # position of the auv at the center of network
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
             np.array([5, 5, 5]),
@@ -30,7 +28,6 @@ class AUVEnvironment(gym.Env):
         ]
         self.action_space = spaces.Tuple((spaces.Discrete(6), spaces.Discrete(5)))  # 6 directions + 5 select sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
-        self.max_steps=50
         
 
     def step(self, action):
@@ -43,11 +40,10 @@ class AUVEnvironment(gym.Env):
                 1 if direction == 2 else -1 if direction == 3 else 0,
                 1 if direction == 4 else -1 if direction == 5 else 0
             ])
-        self.auv_position = np.clip(self.auv_position, 1, 5)
+        self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
         
         selected_sensor_node = self.sensor_node_positions[selection_node]
         received_power = self.compute_received_power(selected_sensor_node)
-            # Compute reward
         reward = np.sum(received_power)
 
         # Update state
@@ -60,9 +56,9 @@ class AUVEnvironment(gym.Env):
         return state, reward, {}
 
     def reset(self):
-        # Reset AUV position to center
-        self.auv_position = np.array([0, 0, 0])
-        # Return initial state
+
+        self.auv_position = np.array([3, 3, 3])   # Reset AUV position to center
+
         return self._get_observation()
 
 
@@ -95,15 +91,11 @@ class AUVEnvironment(gym.Env):
         # Clean up resources if needed
         pass
     def render(self):
-        if self.render_mode == "rgb_array":
-            return self._render_frame()
-
-        if self.screen is None and self.render_mode == "human":
-            pygame.init()
-            pygame.display.init()
-            self.screen = pygame.display.set_mode((self.window_size, self.window_size))
-        if self.clock is None and self.render_mode == "human":
-            self.clock = pygame.time.Clock()
+        
+        pygame.init()
+        pygame.display.init()
+        self.screen = pygame.display.set_mode((self.window_size, self.window_size))
+        self.clock = pygame.time.Clock()
 
         # Draw your environment elements here
         self.screen.fill((255, 255, 255))
@@ -111,8 +103,8 @@ class AUVEnvironment(gym.Env):
     # Draw grid lines
         cell_size = self.window_size // 5
         for i in range(6):
-            pygame.draw.line(self.screen, (200, 200, 200), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
-            pygame.draw.line(self.screen, (200, 200, 200), (0, i * cell_size), (self.window_size, i * cell_size), 1)
+            pygame.draw.line(self.screen, (100, 100, 100), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
+            pygame.draw.line(self.screen, (100, 100, 100), (0, i * cell_size), (self.window_size, i * cell_size), 1)
 
     # Draw AUV
         auv_position = self.auv_position

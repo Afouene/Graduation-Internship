@@ -47,5 +47,12 @@ for _ in range(num_steps):
     print("node selected",selected_node)
     # Store AUV position for plotting
     auv_positions.append(env.auv_position)
-# Close the environment
+
+cumulative_rewards = env.get_cumulative_rewards()
+
+# Print cumulative rewards for each node
+for i, reward in enumerate(cumulative_rewards):
+    print(f"Cumulative reward for node {i}: {reward}")
+
+
 env.close()

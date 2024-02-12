@@ -28,7 +28,8 @@ class AUVEnvironment(gym.Env):
         ]
         self.action_space = spaces.Tuple((spaces.Discrete(6), spaces.Discrete(5)))  # 6 directions + 5 select sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
-        
+        self.cumulative_rewards = [0] * len(self.sensor_node_positions)
+
 
     def step(self, action):
         reward=0
@@ -45,6 +46,7 @@ class AUVEnvironment(gym.Env):
         selected_sensor_node = self.sensor_node_positions[selection_node]
         received_power = self.compute_received_power(selected_sensor_node)
         reward = np.sum(received_power)
+        self.cumulative_rewards[selection_node] += reward  # Update cumulative reward
 
         # Update state
         state = self._get_observation()
@@ -85,6 +87,8 @@ class AUVEnvironment(gym.Env):
         received_power = P_initial - attenuation
         return received_power
 
+    def get_cumulative_rewards(self):
+        return self.cumulative_rewards
 
     
     def close(self):

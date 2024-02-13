@@ -22,10 +22,6 @@ print("Total Reward:", total_reward)
 # Close the environment
 env.close()
 '''
-import gym
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from setting_the_environment import AUVEnvironment
 
 env = AUVEnvironment()
@@ -43,14 +39,14 @@ for _ in range(num_steps):
     env.render()
     print("Step:", _, "Reward:", reward)
     print("pos of auv",env.auv_position)
-    print("direction",direction)
+    print("The action of the direction",direction)
     print("node selected",selected_node)
     # Store AUV position for plotting
     auv_positions.append(env.auv_position)
 
 cumulative_rewards = env.get_cumulative_rewards()
 
-# Print cumulative rewards for each node
+# Print cumulative rewards for each node 
 for i, reward in enumerate(cumulative_rewards):
     print(f"Cumulative reward for node {i}: {reward}")
 

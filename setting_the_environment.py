@@ -17,7 +17,6 @@ class AUVEnvironment(gym.Env):
         self.render_mode = "human"  # because we need real time visualization the render mode is human
         self.metadata = {"render_fps": 30}  
         self.screen = None
-        self.clock = None
         self.auv_position = np.array([3, 3, 3]) # position of the auv at the center of network
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
@@ -91,9 +90,7 @@ class AUVEnvironment(gym.Env):
         return self.cumulative_rewards
 
     
-    def close(self):
-        # Clean up resources if needed
-        pass
+   
     def render(self):
         
         pygame.init()
@@ -101,22 +98,22 @@ class AUVEnvironment(gym.Env):
         self.screen = pygame.display.set_mode((self.window_size, self.window_size))
         self.clock = pygame.time.Clock()
 
-        # Draw your environment elements here
-        self.screen.fill((255, 255, 255))
+    
+        self.screen.fill((255, 255, 255)) 
 
-    # Draw grid lines
+    #  The Draw  of grid lines
         cell_size = self.window_size // 5
         for i in range(6):
             pygame.draw.line(self.screen, (100, 100, 100), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
             pygame.draw.line(self.screen, (100, 100, 100), (0, i * cell_size), (self.window_size, i * cell_size), 1)
 
-    # Draw AUV
+    #  The Draw of  AUV
         auv_position = self.auv_position
         auv_x = (auv_position[0] - 1) * cell_size + cell_size // 2
         auv_y = (auv_position[1] - 1) * cell_size + cell_size // 2
         pygame.draw.circle(self.screen, (0, 0, 255), (auv_x, auv_y), cell_size // 4)
 
-    # Draw sensor nodes
+    #  The Draw  of sensor nodes
         for sensor_node_pos in self.sensor_node_positions:
             node_x = (sensor_node_pos[0] - 1) * cell_size + cell_size // 2
             node_y = (sensor_node_pos[1] - 1) * cell_size + cell_size // 2
@@ -133,7 +130,4 @@ class AUVEnvironment(gym.Env):
     def _render_frame(self):
         canvas = pygame.Surface((self.window_size, self.window_size))
         canvas.fill((255, 255, 255))
-
-        # Draw your environment elements here
-
         return np.transpose(np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2))

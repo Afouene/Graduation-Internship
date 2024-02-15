@@ -7,7 +7,7 @@ def attenuation_factor(f, d, k, D, A):
             +44*(f**2/(f**2+4100))+2.75*pow(10,-4)*pow(f,2)+
             0.003)*pow(10,-3)
         A_D_val = alfa_modelHOP * (1 - 1.93*pow(10,-5) * D)
-        log_d = np.where(d < 1, 0, np.log10(100*(d+1)))
+        log_d = np.where(d < 1, 0, np.log10(200*d))
         return k * log_d + d * A_D_val + A
     
 class AUVEnvironment(gym.Env):
@@ -25,8 +25,9 @@ class AUVEnvironment(gym.Env):
             np.array([5, 2, 2]),
             np.array([4, 4, 4])
         ]
-        self.action_space = spaces.Tuple((spaces.Discrete(6), spaces.Discrete(5)))  # 6 directions + 5 select sensor node actions
+        self.action_space = spaces.MultiDiscrete([6,5])  # 6 directions + 5 select sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
+        self.max_iterations=20
         self.cumulative_rewards = [0] * len(self.sensor_node_positions)
 
 
@@ -46,35 +47,32 @@ class AUVEnvironment(gym.Env):
         received_power = self.compute_received_power(selected_sensor_node)
         reward = np.sum(received_power)
         self.cumulative_rewards[selection_node] += reward  # Update cumulative reward
-
+        self.max_iterations -= 1
         # Update state
         state = self._get_observation()
-        """if self.current_step >= self.max_steps:
+        if self.max_iterations <=0:
             done = True
         else:
             done = False
-        """
-        return state, reward, {}
+        
+        return state, reward, done
 
     def reset(self):
 
         self.auv_position = np.array([3, 3, 3])   # Reset AUV position to center
-
-        return self._get_observation()
+        self.max_iterations=20
+        return self.auv_position
 
 
     def _get_observation(self):
-        received_powers = np.array([self.compute_received_power(sensor_node_pos) for sensor_node_pos in self.sensor_node_positions])
-
-    # Construct the observation array with AUV position and received powers
-        observation = np.concatenate((self.auv_position, received_powers), axis=0)
-        return observation
+       
+        return self.auv_position
     
    
     
     def compute_received_power(self, sensor_node_position):
          # Constants
-        f = 100  # Frequency (KHz)
+        f = 1000  # Frequency (KHz)
         k = 1.5  # Constant for attenuation calculation
         A = 0    # Constant for attenuation calculation
         D=100
@@ -103,20 +101,20 @@ class AUVEnvironment(gym.Env):
 
     #  The Draw  of grid lines
         cell_size = self.window_size // 5
-        for i in range(6):
+        for i in range(7):
             pygame.draw.line(self.screen, (100, 100, 100), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
             pygame.draw.line(self.screen, (100, 100, 100), (0, i * cell_size), (self.window_size, i * cell_size), 1)
 
     #  The Draw of  AUV
         auv_position = self.auv_position
-        auv_x = (auv_position[0] - 1) * cell_size + cell_size // 2
-        auv_y = (auv_position[1] - 1) * cell_size + cell_size // 2
+        auv_x = (auv_position[0]-1 ) * cell_size + cell_size // 2
+        auv_y = (auv_position[1] -1) * cell_size + cell_size // 2
         pygame.draw.circle(self.screen, (0, 0, 255), (auv_x, auv_y), cell_size // 4)
 
     #  The Draw  of sensor nodes
         for sensor_node_pos in self.sensor_node_positions:
-            node_x = (sensor_node_pos[0] - 1) * cell_size + cell_size // 2
-            node_y = (sensor_node_pos[1] - 1) * cell_size + cell_size // 2
+            node_x = (sensor_node_pos[0] -1) * cell_size + cell_size // 2
+            node_y = (sensor_node_pos[1] -1) * cell_size + cell_size // 2
             pygame.draw.rect(self.screen, (255, 0, 0), pygame.Rect(node_x - cell_size // 8, node_y - cell_size // 8, cell_size // 4, cell_size // 4))
 
         pygame.display.update()

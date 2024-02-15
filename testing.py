@@ -1,54 +1,47 @@
-'''import gym
+import matplotlib.pyplot as plt
+import numpy as np
 from setting_the_environment import AUVEnvironment
 
-env=AUVEnvironment()
-state=env.reset()
-num_steps=20
-total_reward=0
-for _ in range(num_steps):
-    action=env.action_space.sample()
-    next_state,reward,_=env.step(action)
-    total_reward+=reward
-    print("Step:", _, "Reward:", reward)
-    
-    # If the episode is done, reset the environment
-    """if done:
-        print("Episode finished after", _+1, "steps")
-        state = env.reset()
-        break
-     """   
-# Print total reward obtained in the episode
-print("Total Reward:", total_reward)
-# Close the environment
-env.close()
-'''
-from setting_the_environment import AUVEnvironment
+total_rewards_over_episodes = []
+num_episodes = 50
 
-env = AUVEnvironment()
+for episode in range(num_episodes):
+    done=False
+    total_reward = 0
+    env = AUVEnvironment()
+    while not done : 
+        auv_positions = [env.auv_position]      # Store AUV positions for plotting
+        action = env.action_space.sample()
+        direction,selected_node=action
+        next_state, reward, done = env.step(action)
+        total_reward += reward
+        env.render()
+        """print("Step: Reward:", reward)
+        print("pos of auv",env.auv_position)
+        print("The action of the direction",direction)
+        print("node selected",selected_node)
+        # Store AUV position for plotting
+        auv_positions.append(env.auv_position)"""
 
-# Store AUV positions for plotting
-auv_positions = [env.auv_position]
+    total_rewards_over_episodes.append(total_reward)
+    #cumulative_rewards = env.get_cumulative_rewards()
+    print("total reward for the episode is  ", total_reward)
 
-num_steps = 20
-total_reward = 0
-for _ in range(num_steps):
-    action = env.action_space.sample()
-    direction,selected_node=action
-    next_state, reward, _ = env.step(action)
-    total_reward += reward
-    env.render()
-    print("Step:", _, "Reward:", reward)
-    print("pos of auv",env.auv_position)
-    print("The action of the direction",direction)
-    print("node selected",selected_node)
-    # Store AUV position for plotting
-    auv_positions.append(env.auv_position)
+    env.close()
+mean_reward = np.mean(total_rewards_over_episodes)
+std_deviation = np.std(total_rewards_over_episodes)
 
-cumulative_rewards = env.get_cumulative_rewards()
+print("Mean total reward over", num_episodes, "episodes:", mean_reward)
+print("Standard deviation of total rewards over", num_episodes, "episodes:", std_deviation)
 
-# Print cumulative rewards for each node 
-for i, reward in enumerate(cumulative_rewards):
-    print(f"Cumulative reward for node {i}: {reward}")
+    # Print cumulative rewards for each node 
+"""for i, reward in enumerate(cumulative_rewards):
+        print(f"Cumulative reward for node {i}: {reward}")
+    print("total reward is ", total_reward)"""
+plt.plot(range(1, num_episodes + 1), total_rewards_over_episodes, marker='o', linestyle='None')
+plt.xlabel('Episode')
+plt.ylabel('Total Reward')
+plt.title('Total Reward after 20 Steps for Each Episode')
+plt.grid(True)
+plt.show()
 
-
-env.close()

@@ -55,7 +55,7 @@ class AUVEnvironment(gym.Env):
         else:
             done = False
         
-        return state, reward, done
+        return state, reward, done,{}
 
     def reset(self):
 
@@ -87,7 +87,9 @@ class AUVEnvironment(gym.Env):
     def get_cumulative_rewards(self):
         return self.cumulative_rewards
 
-    
+    def find_nearest_node_index(self):
+        distances = [np.linalg.norm(sensor_node_position - self.auv_position) for sensor_node_position in self.sensor_node_positions]
+        return np.argmin(distances)
    
     def render(self):
         

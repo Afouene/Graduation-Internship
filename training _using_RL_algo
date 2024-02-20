@@ -1,0 +1,20 @@
+from stable_baselines3 import A2C
+from stable_baselines3.common.evaluation import evaluate_policy
+from setting_the_environment import AUVEnvironment  
+from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike
+
+import os 
+# Create a single environment
+env = AUVEnvironment()
+
+# Create and train the A2C model
+model = A2C("MlpPolicy", env, verbose=1,ent_coef=1)
+model.learn(total_timesteps=5000)
+
+model_path=os.path.join("training\saved_models","A2C_model_version1_ent")
+model.save(model_path)
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=50, deterministic=True)
+
+# Print evaluation results
+print("Mean reward:", mean_reward)
+print("Standard deviation of reward:", std_reward)

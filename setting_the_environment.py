@@ -25,7 +25,7 @@ class AUVEnvironment(gym.Env):
             np.array([5, 2, 2]),
             np.array([4, 4, 4])
         ]
-        self.action_space = spaces.MultiDiscrete([6,5])  # 6 directions + 5 select sensor node actions
+        self.action_space = spaces.MultiDiscrete([6,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
         self.max_iterations=20
         self.cumulative_rewards = [0] * len(self.sensor_node_positions)
@@ -59,7 +59,7 @@ class AUVEnvironment(gym.Env):
 
     def reset(self):
 
-        self.auv_position = np.array([3, 3, 3])   # Reset AUV position to center
+        self.auv_position = np.array([3, 3, 3])   
         self.max_iterations=20
         return self.auv_position
 
@@ -73,8 +73,8 @@ class AUVEnvironment(gym.Env):
     def compute_received_power(self, sensor_node_position):
          # Constants
         f = 1000  # Frequency (KHz)
-        k = 1.5  # Constant for attenuation calculation
-        A = 0    # Constant for attenuation calculation
+        k = 1.5  
+        A = 0    
         D=100
         P_initial = 10  # Initial power (dB)
 

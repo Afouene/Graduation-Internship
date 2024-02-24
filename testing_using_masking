@@ -2,53 +2,25 @@ import numpy as np
 from stable_baselines3 import A2C
 from setting_the_environment import AUVEnvironment  
 
-#  the action mask function is used so we won't get outside of the grid boundaries
-def get_possible_directions(auv_position):
-   
-    possible_mvt = np.ones(6) # because we have directions
-    
-    if auv_position[0] == 1:
-        possible_mvt[1] = 0  
-    if auv_position[0] == 5:
-        possible_mvt[0] = 0  
-    if auv_position[1] == 1:
-        possible_mvt[3] = 0  
-    if auv_position[1] == 5:
-        possible_mvt[2] = 0  
-    if auv_position[2] == 1:
-        possible_mvt[5] = 0  
-    if auv_position[2] == 5:
-        possible_mvt[4] = 0  
-    
-    possible_directions=np.where(possible_mvt==1)[0]
 
-
-    return possible_directions
 
 # Load the pre-trained model
-model_path = "training/saved_models/A2C_model_version0"
+model_path = "training/saved_models/A2C_model_version_after_masking"
 model = A2C.load(model_path)
 
 # Create the environment
 env = AUVEnvironment()
 
 # Test the trained model for 3 episodes
-num_episodes = 1
+num_episodes = 2
 for episode in range(num_episodes):
     obs = env.reset()
     done = False
     total_reward = 0
     while not done:
         auv_position = env.auv_position
-        pos_dirs = get_possible_directions(auv_position)
-        
         # Predict action using the model
-        action, _ = model.predict(obs, deterministic=True)
-        
-        if action[0] not in pos_dirs:
-            action[0] = np.random.choice(pos_dirs)
-            print("After Masking, Action:", action)
-
+        action, _ = model.predict(obs, deterministic=False)
         obs, reward, done, _ = env.step(action)  # Take action in the environment
         total_reward += reward
         # Optionally, render the environment

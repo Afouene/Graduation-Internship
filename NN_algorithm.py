@@ -10,15 +10,15 @@ for episode in range(num_episodes):
     total_reward = 0
     env = AUVEnvironment()
     while not done:
-        auv_positions = [env.auv_position] 
-        direction = np.random.randint(0, 6) # the direction  selected of the auv is random
+        action=env.action_space.sample()
         nearest_node_index = env.find_nearest_node_index() # the index of sensor node that is the closest to the auv
-        action = (direction, nearest_node_index)
+        action = (action[0], nearest_node_index)
         
         # Take a step in the environment
         next_state, reward, done, _ = env.step(action)
         total_reward += reward
         env.render()
+        print("auvpos",env.auv_position)
 
     total_rewards_over_episodes.append(total_reward)
     print("Total reward for the episode is:", total_reward)

@@ -1,20 +1,32 @@
 from stable_baselines3 import A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 from setting_the_environment import AUVEnvironment  
-from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike
+from stable_baselines3.common.env_util import make_vec_env
 
+from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike
+import matplotlib.pyplot as plt
 import os 
+import numpy as np
 # Create a single environment
 env = AUVEnvironment()
+vec_env = make_vec_env(env, n_envs=4)
 
 # Create and train the A2C model
-model = A2C("MlpPolicy", env, verbose=1,ent_coef=1)
-model.learn(total_timesteps=5000)
-
-model_path=os.path.join("training\saved_models","A2C_model_version1_ent")
+model = A2C("MlpPolicy", vec_env, verbose=1)
+model.learn(total_timesteps=10000)
+model_path=os.path.join("training\saved_models","latest_version")
 model.save(model_path)
-mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=50, deterministic=True)
+#mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=50, deterministic=False)
 
-# Print evaluation results
-print("Mean reward:", mean_reward)
-print("Standard deviation of reward:", std_reward)
+ep_rewards = []
+for ep_info in model.ep_info_buffer:
+    ep_rewards.append(ep_info['r'])
+
+print("ep_rewards",ep_rewards)
+#print("chnowa hetha",model.ep_info_buffer)
+"""plt.plot(np.arange(num_episodes), ep_rewards)
+plt.xlabel("Training Episode")
+plt.ylabel("Reward")
+plt.title("A2C Learning Curve")
+plt.grid(True)
+plt.show()"""

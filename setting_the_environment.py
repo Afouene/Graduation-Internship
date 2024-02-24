@@ -34,18 +34,26 @@ class AUVEnvironment(gym.Env):
     def step(self, action):
         reward=0
         direction,selection_node=action
-        
-            # Move AUV in one of the six directions
-        self.auv_position += np.array([
-                1 if direction == 0 else -1 if direction == 1 else 0,
-                1 if direction == 2 else -1 if direction == 3 else 0,
-                1 if direction == 4 else -1 if direction == 5 else 0
-            ])
-        self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
+        possible_dir=self.get_possible_directions()
+        if direction in possible_dir:
+            self.auv_position += np.array([
+                    1 if direction == 0 else -1 if direction == 1 else 0,
+                    1 if direction == 2 else -1 if direction == 3 else 0,
+                    1 if direction == 4 else -1 if direction == 5 else 0
+                ])
+        else:
+            direction=np.random.choice(possible_dir)
+            self.auv_position += np.array([
+                    1 if direction == 0 else -1 if direction == 1 else 0,
+                    1 if direction == 2 else -1 if direction == 3 else 0,
+                    1 if direction == 4 else -1 if direction == 5 else 0
+                ])
+            reward -= 1
+        #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
         
         selected_sensor_node = self.sensor_node_positions[selection_node]
         received_power = self.compute_received_power(selected_sensor_node)
-        reward = np.sum(received_power)
+        reward += np.sum(received_power)
         self.cumulative_rewards[selection_node] += reward  # Update cumulative reward
         self.max_iterations -= 1
         # Update state
@@ -90,7 +98,30 @@ class AUVEnvironment(gym.Env):
     def find_nearest_node_index(self):
         distances = [np.linalg.norm(sensor_node_position - self.auv_position) for sensor_node_position in self.sensor_node_positions]
         return np.argmin(distances)
+    
+   #  the action mask function is used so we won't get outside of the grid boundaries
+    def get_possible_directions(self):
    
+        possible_mvt = np.ones(6) # because we have directions
+        
+        if self.auv_position[0] == 1:
+            possible_mvt[1] = 0  
+        if self.auv_position[0] == 5:
+            possible_mvt[0] = 0  
+        if self.auv_position[1] == 1:
+            possible_mvt[3] = 0  
+        if self.auv_position[1] == 5:
+            possible_mvt[2] = 0  
+        if self.auv_position[2] == 1:
+            possible_mvt[5] = 0  
+        if self.auv_position[2] == 5:
+            possible_mvt[4] = 0  
+        
+        possible_directions=np.where(possible_mvt==1)[0]
+
+
+        return possible_directions
+    
     def render(self):
         
         pygame.init()

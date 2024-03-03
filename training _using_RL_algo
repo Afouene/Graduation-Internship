@@ -7,24 +7,17 @@ from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike
 import matplotlib.pyplot as plt
 import os 
 import numpy as np
-# Create a single environment
 env = AUVEnvironment()
-vec_env = make_vec_env(env, n_envs=4)
 
-# Create and train the A2C model
-model = A2C("MlpPolicy", vec_env, verbose=1)
+model = A2C("MlpPolicy", env, verbose=1,ent_coef=0.1)
 model.learn(total_timesteps=10000)
-model_path=os.path.join("training\saved_models","latest_version")
+model_path=os.path.join("training\saved_models","model_version_5")
 model.save(model_path)
 #mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=50, deterministic=False)
-
-ep_rewards = []
-for ep_info in model.ep_info_buffer:
-    ep_rewards.append(ep_info['r'])
-
-print("ep_rewards",ep_rewards)
-#print("chnowa hetha",model.ep_info_buffer)
-"""plt.plot(np.arange(num_episodes), ep_rewards)
+ep_rewards = [ep_info['r'] for ep_info in model.ep_info_buffer]
+print("episode",ep_rewards)
+"""# Plot the learning curve
+plt.plot(ep_rewards)
 plt.xlabel("Training Episode")
 plt.ylabel("Reward")
 plt.title("A2C Learning Curve")

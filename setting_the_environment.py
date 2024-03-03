@@ -48,13 +48,12 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 2 else -1 if direction == 3 else 0,
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
-            reward -= 1
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
         
         selected_sensor_node = self.sensor_node_positions[selection_node]
         received_power = self.compute_received_power(selected_sensor_node)
         reward += np.sum(received_power)
-        self.cumulative_rewards[selection_node] += reward  # Update cumulative reward
+        self.cumulative_rewards[selection_node] += reward  
         self.max_iterations -= 1
         # Update state
         state = self._get_observation()

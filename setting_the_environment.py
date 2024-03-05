@@ -25,11 +25,14 @@ class AUVEnvironment(gym.Env):
             np.array([5, 2, 2]),
             np.array([4, 4, 4])
         ]
+        self.AoI_all_nodes=[1,1,1,1,1]
+        self.max_iterations=20
+
+        self.AoI_max=self.max_iterations/2
         self.action_space = spaces.MultiDiscrete([6,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
-        self.max_iterations=20
         self.cumulative_rewards = [0] * len(self.sensor_node_positions)
-
+        
 
     def step(self, action):
         reward=0

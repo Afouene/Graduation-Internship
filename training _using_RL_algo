@@ -1,4 +1,4 @@
-from stable_baselines3 import A2C
+from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 from setting_the_environment import AUVEnvironment  
 from stable_baselines3.common.env_util import make_vec_env
@@ -7,19 +7,29 @@ from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike
 import matplotlib.pyplot as plt
 import os 
 import numpy as np
+
+models_dir="training/PPO"
+logdir="logs"
+if not os.path.exists(models_dir):
+    os.makedirs(models_dir)
+if not os.path.exists(logdir):
+    os.makedirs(logdir)  
+
 env = AUVEnvironment()
 
-model = A2C("MlpPolicy", env, verbose=1,ent_coef=0.1)
-model.learn(total_timesteps=10000)
-model_path=os.path.join("training\saved_models","model_version_5")
-model.save(model_path)
+model = PPO("MlpPolicy", env, verbose=1,gamma=0.9,tensorboard_log=logdir)
+Timesteps=10000
+model.learn(total_timesteps=Timesteps)
+model.save(f"{models_dir}/{Timesteps}")
+env.close()
 #mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=50, deterministic=False)
-ep_rewards = [ep_info['r'] for ep_info in model.ep_info_buffer]
-print("episode",ep_rewards)
-"""# Plot the learning curve
-plt.plot(ep_rewards)
-plt.xlabel("Training Episode")
-plt.ylabel("Reward")
-plt.title("A2C Learning Curve")
+'''ep_rewards = [ep_info['r'] for ep_info in model.ep_info_buffer]
+episodes = list(range(1, len(ep_rewards) + 1))
+print("informations",model.ep_info_buffer)
+# Plot rewards against episode number
+plt.plot(episodes, ep_rewards, marker='o')
+plt.xlabel('Episode')
+plt.ylabel('Reward')
+plt.title('Episode Rewards')
 plt.grid(True)
-plt.show()"""
+plt.show()'''

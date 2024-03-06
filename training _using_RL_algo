@@ -17,8 +17,8 @@ if not os.path.exists(logdir):
 
 env = AUVEnvironment()
 
-model = PPO("MlpPolicy", env, verbose=1,gamma=0.9,tensorboard_log=logdir)
-Timesteps=10000
+model = PPO("MlpPolicy", env, n_steps=20 ,verbose=1,gamma=0.9,tensorboard_log=logdir)
+Timesteps=200000
 model.learn(total_timesteps=Timesteps)
 model.save(f"{models_dir}/{Timesteps}")
 env.close()

@@ -3,7 +3,7 @@ import numpy as np
 from setting_the_environment import AUVEnvironment
 
 total_rewards_over_episodes = []
-num_episodes = 50
+num_episodes = 1
 
 for episode in range(num_episodes):
     done=False
@@ -18,6 +18,7 @@ for episode in range(num_episodes):
         env.render()
         print("Step: Reward:", reward)
         print("pos of auv",env.auv_position)
+        print("auv age of information",env.AoI_all_nodes)
         """print("The action of the direction",direction)
         print("node selected",selected_node)
         # Store AUV position for plotting

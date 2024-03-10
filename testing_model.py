@@ -1,16 +1,16 @@
-from stable_baselines3 import A2C
+from stable_baselines3 import PPO
 from setting_the_environment import AUVEnvironment  
 import numpy as np
 
 # Load the pre-trained model
-model_path = "training/saved_models/model_version_5"
-model = A2C.load(model_path)
+model_path = "training/PPO/150000.zip"
+model = PPO.load(model_path)
 
 # Create the environment
 env = AUVEnvironment()
 
 # Test the trained model for 5 episodes
-num_episodes = 1
+num_episodes = 2
 for episode in range(num_episodes):
     obs = env.reset()
     done = False

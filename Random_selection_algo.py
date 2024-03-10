@@ -16,9 +16,7 @@ for episode in range(num_episodes):
         next_state, reward, done ,_= env.step(action)
         total_reward += reward
         env.render()
-        print("Step: Reward:", reward)
-        print("pos of auv",env.auv_position)
-        print("auv age of information",env.AoI_all_nodes)
+        print("THIS IS AUV POSition",env.auv_position)
         """print("The action of the direction",direction)
         print("node selected",selected_node)
         # Store AUV position for plotting

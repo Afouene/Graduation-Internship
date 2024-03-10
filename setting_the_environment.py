@@ -7,7 +7,7 @@ def attenuation_factor(f, d, k, D, A):
             +44*(f**2/(f**2+4100))+2.75*pow(10,-4)*pow(f,2)+
             0.003)*pow(10,-3)
         A_D_val = alfa_modelHOP * (1 - 1.93*pow(10,-5) * D)
-        log_d = np.where(d < 1, 0, np.log10(500*d))
+        log_d = np.where(d < 1, 0, np.log10(200*d))
         return k * log_d + d * A_D_val + A
     
 class AUVEnvironment(gym.Env):
@@ -26,9 +26,9 @@ class AUVEnvironment(gym.Env):
             np.array([4, 4, 4])
         ]
         self.AoI_all_nodes=[1,1,1,1,1]  # we will make it not constant next time
-        self.max_iterations=20
+        self.max_iterations=50
 
-        self.AoI_max=self.max_iterations/5
+        self.AoI_max=self.max_iterations/2
         self.action_space = spaces.MultiDiscrete([6,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
         self.cumulative_rewards = [0] * len(self.sensor_node_positions)
@@ -52,12 +52,21 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
-        
-        selected_sensor_node = self.sensor_node_positions[selection_node]
-        received_power = self.compute_received_power(selected_sensor_node)
+        selected_sensor_nodes = [i for i, node_pos in enumerate(self.sensor_node_positions) if self.is_in_coverage_area(node_pos)]
+        if len(selected_sensor_nodes) == 0:
+
+            reward -= 3
+        else:
+            selection_node = np.random.choice(selected_sensor_nodes)
+            selected_sensor_node = self.sensor_node_positions[selection_node]
+            received_power = self.compute_received_power(selected_sensor_node)
+            reward += np.sum(received_power)
+            #print("this is a reward",reward)
+
         AoI=self.update_Age(selection_node)
-        reward += np.sum(received_power)
-        reward -=np.sum(AoI)
+        
+        reward -=0.6*(np.sum(AoI))
+        #print("this is the reward after aoi",reward)
         self.cumulative_rewards[selection_node] += reward  
         self.max_iterations -= 1
         # Update state
@@ -72,11 +81,15 @@ class AUVEnvironment(gym.Env):
     def reset(self):
 
         self.auv_position = np.array([3, 3, 3])   
-        self.max_iterations=20
+        self.max_iterations=50
         self.AoI_all_nodes=[1,1,1,1,1]
         return self.auv_position
 
-
+    def is_in_coverage_area(self, node_position):
+        x_within = abs(node_position[0] - self.auv_position[0]) <= 1
+        y_within = abs(node_position[1] - self.auv_position[1]) <= 1
+        z_within = abs(node_position[2] - self.auv_position[2]) <= 1
+        return x_within and y_within and  z_within
     def _get_observation(self):
        
         return self.auv_position
@@ -85,11 +98,11 @@ class AUVEnvironment(gym.Env):
     
     def compute_received_power(self, sensor_node_position):
          # Constants
-        f = 1000  # Frequency (KHz)
+        f = 500  # Frequency (KHz)
         k = 1.5  
         A = 0    
         D=100
-        P_initial = 20  # Initial power (dB)
+        P_initial = 30  # Initial power (dB)
 
         # Distance between AUV and sensor node
         d = np.linalg.norm(sensor_node_position - self.auv_position)
@@ -101,7 +114,9 @@ class AUVEnvironment(gym.Env):
         for i in range(len(self.AoI_all_nodes)):
             if i != node_selected_index:  
                 self.AoI_all_nodes[i] = min(self.AoI_max, self.AoI_all_nodes[i] + 1)
+                #self.AoI_all_nodes[i] =  self.AoI_all_nodes[i] + 1
         return self.AoI_all_nodes
+    
     def get_cumulative_rewards(self):
         return self.cumulative_rewards
 

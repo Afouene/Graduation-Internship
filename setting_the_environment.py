@@ -21,12 +21,12 @@ class AUVEnvironment(gym.Env):
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
             np.array([5, 5, 5]),
-            np.array([2, 5, 5]),
-            np.array([5, 2, 2]),
+            np.array([5, 1, 1]),
+            np.array([1, 5, 1]),
             np.array([4, 4, 4])
         ]
         self.AoI_all_nodes=[1,1,1,1,1]  # we will make it not constant next time
-        self.max_iterations=50
+        self.max_iterations=200
 
         self.AoI_max=self.max_iterations/2
         self.action_space = spaces.MultiDiscrete([6,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
@@ -61,7 +61,7 @@ class AUVEnvironment(gym.Env):
             selected_sensor_node = self.sensor_node_positions[selection_node]
             received_power = self.compute_received_power(selected_sensor_node)
             reward += np.sum(received_power)
-            #print("this is a reward",reward)
+            #print("jaawna behy is a reward",reward)
 
         AoI=self.update_Age(selection_node)
         
@@ -81,7 +81,7 @@ class AUVEnvironment(gym.Env):
     def reset(self):
 
         self.auv_position = np.array([3, 3, 3])   
-        self.max_iterations=50
+        self.max_iterations=200
         self.AoI_all_nodes=[1,1,1,1,1]
         return self.auv_position
 

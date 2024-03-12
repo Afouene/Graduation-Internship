@@ -16,19 +16,20 @@ class AUVEnvironment(gym.Env):
         self.window_size = 500 #  the window size
         self.render_mode = "human"  # because we need real time visualization the render mode is human
         self.metadata = {"render_fps": 30}  
-        self.screen = None
         self.auv_position = np.array([3, 3, 3]) # position of the auv at the center of network
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
             np.array([5, 5, 5]),
             np.array([5, 1, 1]),
-            np.array([1, 5, 1]),
-            np.array([4, 4, 4])
+            np.array([1, 5, 5]),
+            np.array([3, 3, 1])
         ]
         self.AoI_all_nodes=[1,1,1,1,1]  # we will make it not constant next time
-        self.max_iterations=200
+        self.max_iterations=100
 
         self.AoI_max=self.max_iterations/2
+        self.prev_selected_node_data = None  
+        self.reward_per_step=[]
         self.action_space = spaces.MultiDiscrete([6,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
         self.cumulative_rewards = [0] * len(self.sensor_node_positions)
@@ -36,7 +37,7 @@ class AUVEnvironment(gym.Env):
 
     def step(self, action):
         reward=0
-        direction,selection_node=action
+        direction,selection_node_wet=action
         possible_dir=self.get_possible_directions()
         if direction in possible_dir:
             self.auv_position += np.array([
@@ -51,25 +52,35 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 2 else -1 if direction == 3 else 0,
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
+        selected_sensor_node = self.sensor_node_positions[selection_node_wet]
+        received_power = self.compute_received_power(selected_sensor_node)
+        #reward += np.sum(received_power)
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
-        selected_sensor_nodes = [i for i, node_pos in enumerate(self.sensor_node_positions) if self.is_in_coverage_area(node_pos)]
-        if len(selected_sensor_nodes) == 0:
-
+        #selected_sensor_nodes_data = [i for i, node_pos in enumerate(self.sensor_node_positions) if self.is_in_coverage_area(node_pos)]
+        d = np.linalg.norm(self.sensor_node_positions[selection_node_wet] - self.auv_position)
+        if (d>1):
             reward -= 3
-        else:
-            selection_node = np.random.choice(selected_sensor_nodes)
-            selected_sensor_node = self.sensor_node_positions[selection_node]
-            received_power = self.compute_received_power(selected_sensor_node)
-            reward += np.sum(received_power)
-            #print("jaawna behy is a reward",reward)
 
-        AoI=self.update_Age(selection_node)
+            AoI=self.update_all_Age()
+
+
+        else:
+
+            #selection_node_data = np.random.choice(selected_sensor_nodes_data)
+            AoI=self.update_Age(selection_node_wet)
+            #self.prev_selected_node_data=selection_node_data
+            
+
+        reward -=((np.sum(AoI)))/5
+        self.reward_per_step.append(np.sum(AoI)/5)
+        '''if(np.max(AoI)==self.AoI_max):
+
+            max_AoI_count = AoI.count(self.AoI_max)
+
+            reward -= (max_AoI_count * self.AoI_max) *0.6'''
         
-        reward -=0.6*(np.sum(AoI))
-        #print("this is the reward after aoi",reward)
-        self.cumulative_rewards[selection_node] += reward  
+        self.cumulative_rewards[selection_node_wet] += reward  
         self.max_iterations -= 1
-        # Update state
         state = self._get_observation()
         if self.max_iterations <=0:
             done = True
@@ -81,15 +92,13 @@ class AUVEnvironment(gym.Env):
     def reset(self):
 
         self.auv_position = np.array([3, 3, 3])   
-        self.max_iterations=200
+        self.max_iterations=100
         self.AoI_all_nodes=[1,1,1,1,1]
         return self.auv_position
+    
+   
 
-    def is_in_coverage_area(self, node_position):
-        x_within = abs(node_position[0] - self.auv_position[0]) <= 1
-        y_within = abs(node_position[1] - self.auv_position[1]) <= 1
-        z_within = abs(node_position[2] - self.auv_position[2]) <= 1
-        return x_within and y_within and  z_within
+    
     def _get_observation(self):
        
         return self.auv_position
@@ -113,6 +122,12 @@ class AUVEnvironment(gym.Env):
         self.AoI_all_nodes[node_selected_index]=1
         for i in range(len(self.AoI_all_nodes)):
             if i != node_selected_index:  
+                self.AoI_all_nodes[i] = min(self.AoI_max, self.AoI_all_nodes[i] + 1)
+                #self.AoI_all_nodes[i] =  self.AoI_all_nodes[i] + 1
+        return self.AoI_all_nodes
+    
+    def update_all_Age(self):
+        for i in range(len(self.AoI_all_nodes)):
                 self.AoI_all_nodes[i] = min(self.AoI_max, self.AoI_all_nodes[i] + 1)
                 #self.AoI_all_nodes[i] =  self.AoI_all_nodes[i] + 1
         return self.AoI_all_nodes

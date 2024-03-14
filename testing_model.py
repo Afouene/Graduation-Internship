@@ -4,7 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the pre-trained model
-model_path = "training/PPO/100000.zip"
+#model_path = "training/PPO/100000.zip"
+model_path="logs/models/rl_model_150000_steps.zip"
 model = PPO.load(model_path)
 
 # Create the environment
@@ -12,7 +13,8 @@ env = AUVEnvironment()
 
 # Test the trained model for 5 episodes
 num_episodes = 100
-reward_over_episodes= []
+average_age_over_episodes= []
+average_power_transfer_over_episodes=[]
 for episode in range(num_episodes):
     obs = env.reset()
     done = False
@@ -30,12 +32,14 @@ for episode in range(num_episodes):
     print("the average aoi is ",np.sum(env.AoI_all_nodes)/5)
     print(f"Episode {episode + 1}: Total reward = {total_reward}")
     print('total rewards for all nodes',env.cumulative_rewards)"""
-    print("the AOI is",env.AoI_all_nodes)
-
-    reward_over_episodes.append(np.mean(env.reward_per_step))
+    #print("the AOI is",env.AoI_all_nodes)
+    average_age_over_episodes.append(np.mean(env.reward_per_step))
+    average_power_transfer_over_episodes.append(np.sum(env.cumulative_rewards))
+    print("This is the power transfered to nodes",env.cumulative_rewards)
     #print("This the average reward",abs(np.mean((env.reward_per_step))))
 
-print("This is for the average reward",np.mean(reward_over_episodes))
+print("This is for the average age",np.mean(average_age_over_episodes))
+print("This is the average power transfered",np.mean(average_power_transfer_over_episodes))
 """
 plt.plot(range(1, num_episodes + 1), reward_over_episodes)
 plt.xlabel('Episode')

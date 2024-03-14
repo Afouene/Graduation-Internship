@@ -30,14 +30,14 @@ class AUVEnvironment(gym.Env):
         self.AoI_max=self.max_iterations/2
         self.prev_selected_node_data = None  
         self.reward_per_step=[]
-        self.action_space = spaces.MultiDiscrete([6,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
+        self.action_space = spaces.MultiDiscrete([6,5,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
         self.cumulative_rewards = [0] * len(self.sensor_node_positions)
         
 
     def step(self, action):
         reward=0
-        direction,selection_node_wet=action
+        direction,selection_node_wet,selection_node_collect_data=action
         possible_dir=self.get_possible_directions()
         if direction in possible_dir:
             self.auv_position += np.array([
@@ -53,11 +53,13 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
         selected_sensor_node = self.sensor_node_positions[selection_node_wet]
+        selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
         received_power = self.compute_received_power(selected_sensor_node)
-        #reward += np.sum(received_power)
+        reward += np.sum(received_power)
+        
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
         #selected_sensor_nodes_data = [i for i, node_pos in enumerate(self.sensor_node_positions) if self.is_in_coverage_area(node_pos)]
-        d = np.linalg.norm(self.sensor_node_positions[selection_node_wet] - self.auv_position)
+        d = np.linalg.norm(selected_sensor_node_collect_data - self.auv_position)
         if (d>1):
             reward -= 3
 
@@ -67,19 +69,19 @@ class AUVEnvironment(gym.Env):
         else:
 
             #selection_node_data = np.random.choice(selected_sensor_nodes_data)
-            AoI=self.update_Age(selection_node_wet)
+            AoI=self.update_Age(selection_node_collect_data)
             #self.prev_selected_node_data=selection_node_data
             
-
-        reward -=((np.sum(AoI)))/5
+        
+        reward -=2*((np.sum(AoI)))/5
         self.reward_per_step.append(np.sum(AoI)/5)
-        '''if(np.max(AoI)==self.AoI_max):
+        """if(np.max(AoI)==self.AoI_max):
 
             max_AoI_count = AoI.count(self.AoI_max)
 
-            reward -= (max_AoI_count * self.AoI_max) *0.6'''
+            reward -= (max_AoI_count * self.AoI_max) *0.6"""
         
-        self.cumulative_rewards[selection_node_wet] += reward  
+        self.cumulative_rewards[selection_node_wet] += np.sum(received_power)  
         self.max_iterations -= 1
         state = self._get_observation()
         if self.max_iterations <=0:
@@ -94,6 +96,7 @@ class AUVEnvironment(gym.Env):
         self.auv_position = np.array([3, 3, 3])   
         self.max_iterations=100
         self.AoI_all_nodes=[1,1,1,1,1]
+        self.cumulative_rewards = [0] * len(self.sensor_node_positions)
         return self.auv_position
     
    

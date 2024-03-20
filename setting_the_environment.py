@@ -9,6 +9,28 @@ def attenuation_factor(f, d, k, D, A):
         A_D_val = alfa_modelHOP * (1 - 1.93*pow(10,-5) * D)
         log_d = np.where(d < 1, 0, np.log10(200*d))
         return k * log_d + d * A_D_val + A
+
+def signal_to_noise_ratio(SL,TL,NL,DI):
+
+    return SL-TL-NL+DI
+
+def Acoustic_source_level(P_elec,elec_acous_conv_eff,DI):
+    
+    return 170.8+10*np.log10(P_elec)+10*np.log10(elec_acous_conv_eff)+DI
+
+def Transmission_Loss(k,r,alfa_THorp):
+
+    return k*np.log10(r)+r*alfa_THorp
+
+def Power_harvested(n,RL,RVS,Rp):
+
+    p=10**(RL/20)  #acoustic pressure p on the hydrophone
+    #RVS=20*np.log10(M)   Receiving voltage sensitivity (RVS) of a hydrophone
+    V_ind=p*(10**(RVS/20)) # induced voltage
+    P_available=n*(V_ind**2)/(4*Rp)
+    P_har=0.7*P_available
+
+    return P_har
     
 class AUVEnvironment(gym.Env):
     def __init__(self):
@@ -22,17 +44,25 @@ class AUVEnvironment(gym.Env):
             np.array([5, 5, 5]),
             np.array([5, 1, 1]),
             np.array([1, 5, 5]),
-            np.array([3, 3, 1])
+            np.array([3, 3, 1]),
+            np.array([6, 4, 2]),
+            np.array([8, 7, 3]),
+            np.array([10 ,10 ,1]),
+            np.array([5, 8, 4]),
+            np.array([9,9,2])
+
         ]
-        self.AoI_all_nodes=[1,1,1,1,1]  # we will make it not constant next time
+        self.num_devices=10
+        
+        self.AoI_all_nodes=[1]*self.num_devices # we will make it not constant next time
         self.max_iterations=100
 
         self.AoI_max=self.max_iterations/2
         self.prev_selected_node_data = None  
         self.reward_per_step=[]
         self.action_space = spaces.MultiDiscrete([6,5,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
-        self.observation_space = spaces.Box(low=1, high=5, shape=(3,)) #grid 5*5*5
-        self.cumulative_rewards = [0] * len(self.sensor_node_positions)
+        self.observation_space = spaces.Box(low=1, high=10, shape=(3,))
+        self.cumulative_rewards = [0] * self.num_devices
         
 
     def step(self, action):
@@ -56,7 +86,7 @@ class AUVEnvironment(gym.Env):
         selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
         received_power = self.compute_received_power(selected_sensor_node)
         reward += np.sum(received_power)
-        
+        print("hetha power",reward)
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
         #selected_sensor_nodes_data = [i for i, node_pos in enumerate(self.sensor_node_positions) if self.is_in_coverage_area(node_pos)]
         d = np.linalg.norm(selected_sensor_node_collect_data - self.auv_position)
@@ -73,8 +103,9 @@ class AUVEnvironment(gym.Env):
             #self.prev_selected_node_data=selection_node_data
             
         
-        reward -=2*((np.sum(AoI)))/5
-        self.reward_per_step.append(np.sum(AoI)/5)
+        reward -=1*((np.sum(AoI)))/self.num_devices
+        print("hetha aoi,",np.sum(AoI)/self.num_devices)
+        self.reward_per_step.append(np.sum(AoI)/self.num_devices)
         """if(np.max(AoI)==self.AoI_max):
 
             max_AoI_count = AoI.count(self.AoI_max)
@@ -95,15 +126,17 @@ class AUVEnvironment(gym.Env):
 
         self.auv_position = np.array([3, 3, 3])   
         self.max_iterations=100
-        self.AoI_all_nodes=[1,1,1,1,1]
-        self.cumulative_rewards = [0] * len(self.sensor_node_positions)
+        self.AoI_all_nodes=[1] * self.num_devices
+        self.cumulative_rewards = [0] * self.num_devices
+        
+
         return self.auv_position
     
    
 
     
     def _get_observation(self):
-       
+        
         return self.auv_position
     
    
@@ -149,11 +182,11 @@ class AUVEnvironment(gym.Env):
         
         if self.auv_position[0] == 1:
             possible_mvt[1] = 0  
-        if self.auv_position[0] == 5:
+        if self.auv_position[0] == 10:
             possible_mvt[0] = 0  
         if self.auv_position[1] == 1:
             possible_mvt[3] = 0  
-        if self.auv_position[1] == 5:
+        if self.auv_position[1] == 10:
             possible_mvt[2] = 0  
         if self.auv_position[2] == 1:
             possible_mvt[5] = 0  
@@ -176,8 +209,8 @@ class AUVEnvironment(gym.Env):
         self.screen.fill((255, 255, 255)) 
 
     #  The Draw  of grid lines
-        cell_size = self.window_size // 5
-        for i in range(7):
+        cell_size = self.window_size // 10
+        for i in range(11):
             pygame.draw.line(self.screen, (100, 100, 100), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
             pygame.draw.line(self.screen, (100, 100, 100), (0, i * cell_size), (self.window_size, i * cell_size), 1)
 

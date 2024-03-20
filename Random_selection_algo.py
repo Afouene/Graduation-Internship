@@ -17,6 +17,7 @@ for episode in range(num_episodes):
         next_state, reward, done ,_= env.step(action)
         total_reward += reward
         #env.render()
+        #print("auv position",env.auv_position)
         """print("aoi,",env.AoI_all_nodes)
         print("THIS IS AUV POSition",env.auv_position)
         print("reward",reward)
@@ -25,8 +26,9 @@ for episode in range(num_episodes):
         # Store AUV position for plotting
         auv_positions.append(env.auv_position)"""
     average_age_over_episodes.append(np.mean(env.reward_per_step))
+    #print("This is aoi",env.reward_per_step)
     average_power_transfer_over_episodes.append(np.sum(env.cumulative_rewards))
-    print("This is the power transfered to nodes",env.cumulative_rewards)
+    #print("This is the power transfered to nodes",env.cumulative_rewards)
 
     #cumulative_rewards = env.get_cumulative_rewards()
     """print("total reward for the episode is  ", total_reward)

@@ -2,25 +2,24 @@ import gym
 from gym import spaces
 import numpy as np
 import pygame
-def attenuation_factor(f, d, k, D, A):
-        alfa_modelHOP = (0.11*(f**2/(f**2+1))
-            +44*(f**2/(f**2+4100))+2.75*pow(10,-4)*pow(f,2)+
-            0.003)*pow(10,-3)
-        A_D_val = alfa_modelHOP * (1 - 1.93*pow(10,-5) * D)
-        log_d = np.where(d < 1, 0, np.log10(200*d))
-        return k * log_d + d * A_D_val + A
 
-def signal_to_noise_ratio(SL,TL,NL,DI):
 
-    return SL-TL-NL+DI
+def signal_to_noise_ratio(SL,TL,NL):
+
+    return SL-TL-NL
 
 def Acoustic_source_level(P_elec,elec_acous_conv_eff,DI):
     
     return 170.8+10*np.log10(P_elec)+10*np.log10(elec_acous_conv_eff)+DI
 
-def Transmission_Loss(k,r,alfa_THorp):
+def Transmission_Loss(f,k,r):
 
-    return k*np.log10(r)+r*alfa_THorp
+    alfa_THorp = (0.11*(f**2/(f**2+1))
+            +44*(f**2/(f**2+4100))+2.75*pow(10,-4)*pow(f,2)+
+            0.003)
+    log_r = np.where(r < 1, 0, np.log10(r))
+
+    return k*log_r+r*np.log10(alfa_THorp)
 
 def Power_harvested(n,RL,RVS,Rp):
 
@@ -31,7 +30,7 @@ def Power_harvested(n,RL,RVS,Rp):
     P_har=0.7*P_available
 
     return P_har
-    
+
 class AUVEnvironment(gym.Env):
     def __init__(self):
         super(AUVEnvironment, self).__init__()
@@ -75,6 +74,7 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 2 else -1 if direction == 3 else 0,
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
+            
         else:
             direction=np.random.choice(possible_dir)
             self.auv_position += np.array([
@@ -82,16 +82,17 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 2 else -1 if direction == 3 else 0,
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
+            reward -=0.3
         selected_sensor_node = self.sensor_node_positions[selection_node_wet]
         selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
         received_power = self.compute_received_power(selected_sensor_node)
         reward += np.sum(received_power)
-        print("hetha power",reward)
+        #print("hetha power",reward)
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
         #selected_sensor_nodes_data = [i for i, node_pos in enumerate(self.sensor_node_positions) if self.is_in_coverage_area(node_pos)]
         d = np.linalg.norm(selected_sensor_node_collect_data - self.auv_position)
         if (d>1):
-            reward -= 3
+            reward -= 0.2
 
             AoI=self.update_all_Age()
 
@@ -103,8 +104,8 @@ class AUVEnvironment(gym.Env):
             #self.prev_selected_node_data=selection_node_data
             
         
-        reward -=1*((np.sum(AoI)))/self.num_devices
-        print("hetha aoi,",np.sum(AoI)/self.num_devices)
+        reward -=0.01*((np.sum(AoI)))/self.num_devices
+        #print("hetha aoi,",0.01*(np.sum(AoI)/self.num_devices))
         self.reward_per_step.append(np.sum(AoI)/self.num_devices)
         """if(np.max(AoI)==self.AoI_max):
 
@@ -142,18 +143,17 @@ class AUVEnvironment(gym.Env):
    
     
     def compute_received_power(self, sensor_node_position):
-         # Constants
-        f = 500  # Frequency (KHz)
-        k = 1.5  
-        A = 0    
-        D=100
-        P_initial = 30  # Initial power (dB)
+        SL=Acoustic_source_level(6000,0.5,20)
+        r = np.linalg.norm(sensor_node_position - self.auv_position)
+        AL=Transmission_Loss(60,1.5,r)
+        NL=50
+        RVS=-150
+        Rp=125
+        RL=signal_to_noise_ratio(SL,AL,NL)
+        P_harvested=Power_harvested(2,RL,RVS,Rp)
 
-        # Distance between AUV and sensor node
-        d = np.linalg.norm(sensor_node_position - self.auv_position)
-        attenuation = attenuation_factor(f, d, k, D, A)  
-        received_power = P_initial - attenuation
-        return received_power
+        
+        return P_harvested
     def update_Age(self,node_selected_index):
         self.AoI_all_nodes[node_selected_index]=1
         for i in range(len(self.AoI_all_nodes)):

@@ -10,13 +10,16 @@ import matplotlib.pyplot as plt
 #model_path='logs/models_mu_eq_10/rl_model_200000_steps.zip'
 #model_path='logs/models_mu_eq_0.2/rl_model_175000_steps.zip'
 #model_path='logs/models_mu_eq_0.5/rl_model_130000_steps.zip'
-model_path="logs/models_after_changing_dimensions/rl_model_90000_steps.zip"
+#model_path="logs/models_after_changing_dimensions/rl_model_90000_steps.zip"
+#model_path="logs/models_new_formula_harvested_power/rl_model_100000_steps.zip"
+#model_path="logs/models_new_formula_harvested_power_version_2/rl_model_100000_steps.zip"
+model_path="logs/models_new_formula_harvested_power_version_3/rl_model_40000_steps.zip"
 model = PPO.load(model_path)
 
 
 env = AUVEnvironment()
 
-num_episodes = 1000
+num_episodes = 100
 average_age_over_episodes= []
 average_power_transfer_over_episodes=[]
 for episode in range(num_episodes):
@@ -24,12 +27,14 @@ for episode in range(num_episodes):
     done = False
     total_reward = 0
     while not done:
-        action, _ = model.predict(obs, deterministic=False)  
+        action, _ = model.predict(obs, deterministic=True)  
         obs, reward, done, _ = env.step(action)  
         total_reward += reward
 
         #env.render()
-    """print("AUV position:", env.auv_position)
+        
+
+    """
         print("action",action)
         #print("dis",np.linalg.norm(env.sensor_node_positions[action[1]] - env.auv_position))
     print("the aoi of each node",env.AoI_all_nodes)
@@ -38,7 +43,9 @@ for episode in range(num_episodes):
     print('total rewards for all nodes',env.cumulative_rewards)"""
     #print("the AOI is",env.AoI_all_nodes)
     average_age_over_episodes.append(np.mean(env.reward_per_step))
+    print('coofafa',env.cumulative_rewards)
     average_power_transfer_over_episodes.append(np.sum(env.cumulative_rewards))
+
     #print("This is the power transfered to nodes",env.cumulative_rewards)
     #print("This the average reward",abs(np.mean((env.reward_per_step))))
 

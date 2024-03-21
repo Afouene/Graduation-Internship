@@ -3,7 +3,7 @@ import numpy as np
 from setting_the_environment import AUVEnvironment
 
 total_rewards_over_episodes = []
-num_episodes = 100
+num_episodes = 1000
 average_age_over_episodes= []
 average_power_transfer_over_episodes=[]
 for episode in range(num_episodes):

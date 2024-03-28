@@ -13,13 +13,14 @@ import matplotlib.pyplot as plt
 #model_path="logs/models_after_changing_dimensions/rl_model_90000_steps.zip"
 #model_path="logs/models_new_formula_harvested_power/rl_model_100000_steps.zip"
 #model_path="logs/models_new_formula_harvested_power_version_2/rl_model_100000_steps.zip"
-model_path="logs/models_new_formula_harvested_power_version_3/rl_model_40000_steps.zip"
+model_path="logs/models_constrained_energy-10/rl_model_150000_steps.zip"
+
 model = PPO.load(model_path)
 
 
 env = AUVEnvironment()
 
-num_episodes = 100
+num_episodes = 1000
 average_age_over_episodes= []
 average_power_transfer_over_episodes=[]
 for episode in range(num_episodes):
@@ -27,7 +28,7 @@ for episode in range(num_episodes):
     done = False
     total_reward = 0
     while not done:
-        action, _ = model.predict(obs, deterministic=True)  
+        action, _ = model.predict(obs, deterministic=False)  
         obs, reward, done, _ = env.step(action)  
         total_reward += reward
 
@@ -43,12 +44,12 @@ for episode in range(num_episodes):
     print('total rewards for all nodes',env.cumulative_rewards)"""
     #print("the AOI is",env.AoI_all_nodes)
     average_age_over_episodes.append(np.mean(env.reward_per_step))
-    print('coofafa',env.cumulative_rewards)
+    print('Power transfered',env.cumulative_rewards)
     average_power_transfer_over_episodes.append(np.sum(env.cumulative_rewards))
 
     #print("This is the power transfered to nodes",env.cumulative_rewards)
     #print("This the average reward",abs(np.mean((env.reward_per_step))))
 
 print("This is for the average age",np.mean(average_age_over_episodes))
-print("This is the average power transfered",np.mean(average_power_transfer_over_episodes))
+print("This is the average  cummulative power transfered",np.mean(average_power_transfer_over_episodes))
 env.close()

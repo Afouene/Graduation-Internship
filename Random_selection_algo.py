@@ -31,14 +31,17 @@ for episode in range(num_episodes):
     #print("This is the power transfered to nodes",env.cumulative_rewards)
 
     #cumulative_rewards = env.get_cumulative_rewards()
+    print('Power_harvested',env.cumulative_rewards)
+
     """print("total reward for the episode is  ", total_reward)
     print("the aoi is",env.AoI_all_nodes)
     env.close()"""
 """mean_reward = np.mean(total_rewards_over_episodes)
 std_deviation = np.std(total_rewards_over_episodes)"""
 
+
 print("This is for the average age",np.mean(average_age_over_episodes))
-print("This is the average power transfered",np.mean(average_power_transfer_over_episodes))
+print("This is the average cummulative power harvested",np.mean(average_power_transfer_over_episodes))
 """"
 plt.plot(range(1, num_episodes + 1), total_rewards_over_episodes)
 plt.xlabel('Episode')

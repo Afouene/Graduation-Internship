@@ -30,7 +30,13 @@ def Power_harvested(n,RL,RVS,Rp):
     P_har=0.7*P_available
 
     return P_har
+def energy_needed_for_transmission_data(system_throughput,Bandiwdth,duration):
 
+    transmitting_power=2**(system_throughput/Bandiwdth)-1
+    
+    energy_for_transmission=transmitting_power*duration
+
+    return energy_for_transmission
 class AUVEnvironment(gym.Env):
     def __init__(self):
         super(AUVEnvironment, self).__init__()
@@ -44,14 +50,13 @@ class AUVEnvironment(gym.Env):
             np.array([5, 1, 1]),
             np.array([1, 5, 5]),
             np.array([3, 3, 1]),
-            np.array([6, 4, 2]),
-            np.array([8, 7, 3]),
-            np.array([10 ,10 ,1]),
-            np.array([5, 8, 4]),
-            np.array([9,9,2])
+           
+
 
         ]
-        self.num_devices=10
+        energy_needed=energy_needed_for_transmission_data(10,4000,10)
+        print("energy needed",energy_needed)
+        self.num_devices=5
         
         self.AoI_all_nodes=[1]*self.num_devices # we will make it not constant next time
         self.max_iterations=100
@@ -60,7 +65,7 @@ class AUVEnvironment(gym.Env):
         self.prev_selected_node_data = None  
         self.reward_per_step=[]
         self.action_space = spaces.MultiDiscrete([6,5,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
-        self.observation_space = spaces.Box(low=1, high=10, shape=(3,))
+        self.observation_space = spaces.Box(low=1, high=6, shape=(3,))
         self.cumulative_rewards = [0] * self.num_devices
         
 
@@ -83,9 +88,14 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
             reward -=0.3
+
+
         selected_sensor_node = self.sensor_node_positions[selection_node_wet]
         selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
         received_power = self.compute_received_power(selected_sensor_node)
+
+
+
         reward += np.sum(received_power)
         #print("hetha power",reward)
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
@@ -105,6 +115,7 @@ class AUVEnvironment(gym.Env):
             
         
         reward -=0.01*((np.sum(AoI)))/self.num_devices
+        
         #print("hetha aoi,",0.01*(np.sum(AoI)/self.num_devices))
         self.reward_per_step.append(np.sum(AoI)/self.num_devices)
         """if(np.max(AoI)==self.AoI_max):
@@ -114,9 +125,12 @@ class AUVEnvironment(gym.Env):
             reward -= (max_AoI_count * self.AoI_max) *0.6"""
         
         self.cumulative_rewards[selection_node_wet] += np.sum(received_power)  
+        if(self.cumulative_rewards[selection_node_wet]>30):
+            reward-=10
         self.max_iterations -= 1
         state = self._get_observation()
-        if self.max_iterations <=0:
+        if self.max_iterations <=0   :
+        
             done = True
         else:
             done = False
@@ -154,6 +168,7 @@ class AUVEnvironment(gym.Env):
 
         
         return P_harvested
+    
     def update_Age(self,node_selected_index):
         self.AoI_all_nodes[node_selected_index]=1
         for i in range(len(self.AoI_all_nodes)):
@@ -182,15 +197,15 @@ class AUVEnvironment(gym.Env):
         
         if self.auv_position[0] == 1:
             possible_mvt[1] = 0  
-        if self.auv_position[0] == 10:
+        if self.auv_position[0] == 6:
             possible_mvt[0] = 0  
         if self.auv_position[1] == 1:
             possible_mvt[3] = 0  
-        if self.auv_position[1] == 10:
+        if self.auv_position[1] == 6:
             possible_mvt[2] = 0  
         if self.auv_position[2] == 1:
             possible_mvt[5] = 0  
-        if self.auv_position[2] == 5:
+        if self.auv_position[2] == 3:
             possible_mvt[4] = 0  
         
         possible_directions=np.where(possible_mvt==1)[0]
@@ -209,7 +224,7 @@ class AUVEnvironment(gym.Env):
         self.screen.fill((255, 255, 255)) 
 
     #  The Draw  of grid lines
-        cell_size = self.window_size // 10
+        cell_size = self.window_size // 6
         for i in range(11):
             pygame.draw.line(self.screen, (100, 100, 100), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
             pygame.draw.line(self.screen, (100, 100, 100), (0, i * cell_size), (self.window_size, i * cell_size), 1)

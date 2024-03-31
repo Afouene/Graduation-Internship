@@ -1,5 +1,5 @@
 from stable_baselines3 import PPO
-from setting_the_environment import AUVEnvironment  
+from environment import AUVEnvironment  
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -13,7 +13,10 @@ import matplotlib.pyplot as plt
 #model_path="logs/models_after_changing_dimensions/rl_model_90000_steps.zip"
 #model_path="logs/models_new_formula_harvested_power/rl_model_100000_steps.zip"
 #model_path="logs/models_new_formula_harvested_power_version_2/rl_model_100000_steps.zip"
-model_path="logs/models_new_formula_harvested_power_version_3/rl_model_40000_steps.zip"
+#model_path="logs/models_1105/rl_model_40000_steps.zip"
+#model_path="logs/models_1351/rl_model_115000_steps.zip"
+#model_path='logs/models_1449/rl_model_100000_steps.zip'
+model_path="logs/models_1204_28/rl_model_150000_steps.zip"
 model = PPO.load(model_path)
 
 
@@ -27,11 +30,11 @@ for episode in range(num_episodes):
     done = False
     total_reward = 0
     while not done:
-        action, _ = model.predict(obs, deterministic=True)  
+        action, _ = model.predict(obs,deterministic=False)  
         obs, reward, done, _ = env.step(action)  
         total_reward += reward
 
-        #env.render()
+        env.render()
         
 
     """

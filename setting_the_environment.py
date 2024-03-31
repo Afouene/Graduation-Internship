@@ -37,35 +37,35 @@ class AUVEnvironment(gym.Env):
         self.window_size = 500 #  the window size
         self.render_mode = "human"  # because we need real time visualization the render mode is human
         self.metadata = {"render_fps": 30}  
-        self.auv_position = np.array([3, 3, 3]) # position of the auv at the center of network
+        self.auv_position = np.array([3, 3, 3]) 
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
             np.array([5, 5, 5]),
             np.array([5, 1, 1]),
             np.array([1, 5, 5]),
             np.array([3, 3, 1]),
-            np.array([6, 4, 2]),
-            np.array([8, 7, 3]),
-            np.array([10 ,10 ,1]),
-            np.array([5, 8, 4]),
-            np.array([9,9,2])
+            
 
         ]
-        self.num_devices=10
+        self.num_devices=5
         
-        self.AoI_all_nodes=[1]*self.num_devices # we will make it not constant next time
+        self.AoI_all_nodes=[1]*self.num_devices 
         self.max_iterations=100
 
         self.AoI_max=self.max_iterations/2
         self.prev_selected_node_data = None  
         self.reward_per_step=[]
-        self.action_space = spaces.MultiDiscrete([6,5,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
-        self.observation_space = spaces.Box(low=1, high=10, shape=(3,))
+        self.action_space = spaces.MultiDiscrete([6,5,5])  
+        self.observation_space = spaces.Box(low=1, high=6, shape=(3,),dtype=int)
+        self.reward_space = spaces.Box(low=np.array([0,0]), high=np.array([5000,5000]))
+
         self.cumulative_rewards = [0] * self.num_devices
         
 
     def step(self, action):
-        reward=0
+        reward=np.array([0,0])
+        print("afkafjafkjfa",action)
+
         direction,selection_node_wet,selection_node_collect_data=action
         possible_dir=self.get_possible_directions()
         if direction in possible_dir:
@@ -82,17 +82,17 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 2 else -1 if direction == 3 else 0,
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
-            reward -=0.3
+            
         selected_sensor_node = self.sensor_node_positions[selection_node_wet]
         selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
         received_power = self.compute_received_power(selected_sensor_node)
-        reward += np.sum(received_power)
+        reward[0]= np.sum(received_power)
         #print("hetha power",reward)
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid
         #selected_sensor_nodes_data = [i for i, node_pos in enumerate(self.sensor_node_positions) if self.is_in_coverage_area(node_pos)]
         d = np.linalg.norm(selected_sensor_node_collect_data - self.auv_position)
         if (d>1):
-            reward -= 0.2
+            #reward -= 0.2
 
             AoI=self.update_all_Age()
 
@@ -104,7 +104,7 @@ class AUVEnvironment(gym.Env):
             #self.prev_selected_node_data=selection_node_data
             
         
-        reward -=0.01*((np.sum(AoI)))/self.num_devices
+        reward[1]=-((np.sum(AoI)))/self.num_devices
         #print("hetha aoi,",0.01*(np.sum(AoI)/self.num_devices))
         self.reward_per_step.append(np.sum(AoI)/self.num_devices)
         """if(np.max(AoI)==self.AoI_max):
@@ -121,7 +121,7 @@ class AUVEnvironment(gym.Env):
         else:
             done = False
         
-        return state, reward, done,{}
+        return state, reward, done,False,{}
 
     def reset(self):
 
@@ -131,7 +131,7 @@ class AUVEnvironment(gym.Env):
         self.cumulative_rewards = [0] * self.num_devices
         
 
-        return self.auv_position
+        return self.auv_position,True
     
    
 
@@ -182,15 +182,15 @@ class AUVEnvironment(gym.Env):
         
         if self.auv_position[0] == 1:
             possible_mvt[1] = 0  
-        if self.auv_position[0] == 10:
+        if self.auv_position[0] == 6:
             possible_mvt[0] = 0  
         if self.auv_position[1] == 1:
             possible_mvt[3] = 0  
-        if self.auv_position[1] == 10:
+        if self.auv_position[1] == 6:
             possible_mvt[2] = 0  
         if self.auv_position[2] == 1:
             possible_mvt[5] = 0  
-        if self.auv_position[2] == 5:
+        if self.auv_position[2] == 2:
             possible_mvt[4] = 0  
         
         possible_directions=np.where(possible_mvt==1)[0]

@@ -1,3 +1,4 @@
+
 import matplotlib.pyplot as plt
 import numpy as np
 from environment import AUVEnvironment
@@ -5,7 +6,7 @@ import gym
 total_rewards_over_episodes = []
 num_episodes = 1
 average_age_over_episodes= []
-average_power_transfer_over_episodes=[]
+average_energy_harvested_over_episodes=[]
 for episode in range(num_episodes):
     done=False
     env = AUVEnvironment()
@@ -28,9 +29,9 @@ for episode in range(num_episodes):
         # Store AUV position for plotting
         auv_positions.append(env.auv_position)"""
     average_age_over_episodes.append(np.mean(env.reward_per_step))
-    print('Power transferd',env.cumulative_rewards)
+    print('Energy Harvested in 1 episode',env.cumulative_rewards)
     #print("This is aoi",env.reward_per_step)
-    average_power_transfer_over_episodes.append(np.sum(env.cumulative_rewards))
+    average_energy_harvested_over_episodes.append(np.sum(env.cumulative_rewards))
     #print("This is the power transfered to nodes",env.cumulative_rewards)
 
     #cumulative_rewards = env.get_cumulative_rewards()
@@ -41,7 +42,7 @@ for episode in range(num_episodes):
 std_deviation = np.std(total_rewards_over_episodes)"""
 
 print("This is for the average age",np.mean(average_age_over_episodes))
-print("This is the average  cummulative power transfered",np.mean(average_power_transfer_over_episodes))
+print("This is the average  cummulative energy harvested",np.mean(average_energy_harvested_over_episodes))
 """"
 plt.plot(range(1, num_episodes + 1), total_rewards_over_episodes)
 plt.xlabel('Episode')

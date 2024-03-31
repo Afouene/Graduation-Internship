@@ -26,20 +26,18 @@ def Power_harvested(n,RL,RVS,Rp):
     p=10**(RL/20)  #acoustic pressure p on the hydrophone
     #RVS=20*np.log10(M)   Receiving voltage sensitivity (RVS) of a hydrophone
     V_ind=p*(10**(RVS/20)) # induced voltage
-    print("induced voltage",V_ind)
     P_available=n*(V_ind**2)/(4*Rp)
-    print("Pç_avalaible",P_available)
     P_har=0.7*P_available
-    print("power harvested",P_har)
     return P_har
+def energy_needed_for_transmission_data(system_throughput,Bandiwdth):
 
-def energy_needed_for_transmission_data(system_throughput,Bandiwdth,duration):
+        transmitting_power=2**(system_throughput/Bandiwdth)-1
 
-    transmitting_power=2**(system_throughput/Bandiwdth)-1
     
-    energy_for_transmission=transmitting_power*duration
+        energy_for_transmission=transmitting_power
 
-    return energy_for_transmission
+        return energy_for_transmission
+
 
 class AUVEnvironment(gym.Env):
     def __init__(self):
@@ -59,19 +57,18 @@ class AUVEnvironment(gym.Env):
         ]
         self.num_devices=5
         
-        self.AoI_all_nodes=[1]*self.num_devices # we will make it not constant next time
-        self.max_iterations=100
+        self.AoI_all_nodes=[1]*self.num_devices 
+        self.max_iterations=1
 
         self.AoI_max=self.max_iterations/2
-        self.prev_selected_node_data = None  
+        self.prev_auv_position=[3,3,3] 
         self.reward_per_step=[]
         self.action_space = spaces.MultiDiscrete([6,5,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=6, shape=(3,))
-        self.cumulative_rewards = [0] * self.num_devices
+        self.energy_stored = [0] * self.num_devices
         
-        energy_needed=energy_needed_for_transmission_data(10,4000,10)
-        print("energy needed",energy_needed)
-
+        p=energy_needed_for_transmission_data(4,10000)
+        print("snr",p)
     def step(self, action):
         reward=0
         direction,selection_node_wet,selection_node_collect_data=action
@@ -91,11 +88,14 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
             reward -=0.3
+        
         selected_sensor_node = self.sensor_node_positions[selection_node_wet]
         selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
-        received_power = self.compute_harvested_power(selected_sensor_node)
-        reward += received_power
-        
+        harvested_energy = self.compute_harvested_energy(selected_sensor_node)
+        reward += harvested_energy
+        print("harvested energy in Joules for 1 step",harvested_energy)
+        energy_transmitted=self.energy_for_trans(selected_sensor_node_collect_data)
+        print("this is energy needed for tranmssion",energy_transmitted)
         d = np.linalg.norm(selected_sensor_node_collect_data - self.auv_position)
         if(self.AoI_all_nodes[selection_node_collect_data]==np.max(self.AoI_all_nodes)) or (self.cumulative_rewards[selection_node_wet]==np.min(self.cumulative_rewards)):
 
@@ -118,13 +118,7 @@ class AUVEnvironment(gym.Env):
         reward -=0.01*((np.sum(AoI)))/self.num_devices
         #print("hetha aoi,",0.01*(np.sum(AoI)/self.num_devices))
         self.reward_per_step.append(np.sum(AoI)/self.num_devices)
-        """if(np.max(AoI)==self.AoI_max):
-
-            max_AoI_count = AoI.count(self.AoI_max)
-            np.all(np.array(self.cumulative_rewards) > 0.9)
-            reward -= (max_AoI_count * self.AoI_max) *0.6"""
-        
-        self.cumulative_rewards[selection_node_wet] += np.sum(received_power)  
+        self.cumulative_rewards[selection_node_wet] += harvested_energy  
         self.max_iterations -= 1
         state = self._get_observation()
         if  self.max_iterations <=0 :
@@ -138,7 +132,7 @@ class AUVEnvironment(gym.Env):
     def reset(self):
 
         self.auv_position = np.array([3, 3, 3])   
-        self.max_iterations=100
+        self.max_iterations=1
         self.AoI_all_nodes=[1] * self.num_devices
         self.cumulative_rewards = [0] * self.num_devices
         
@@ -168,19 +162,34 @@ class AUVEnvironment(gym.Env):
         received_power = P_initial - attenuation
         return received_power"""
     
-    def compute_harvested_power(self, sensor_node_position):
+    def compute_harvested_energy(self, sensor_node_position):
         SL=Acoustic_source_level(2000,0.5,20)
         r = np.linalg.norm(sensor_node_position - self.auv_position)
         #print("auv pos",self.auv_position," sensor",sensor_node_position)
-        AL=Transmission_Loss(60,1.5,25*r)
-        NL=50
+        AL=Transmission_Loss(60,1.5,100*r)
+        NL=30
         RVS=-150
         Rp=125
+        duration=25 #25 seconds
         RL=signal_to_noise_ratio(SL,AL,NL)
         P_harvested=Power_harvested(2,RL,RVS,Rp)
 
-        
-        return P_harvested
+        energy_harvested=P_harvested*duration
+        return energy_harvested
+    
+
+    def energy_for_trans(self,sensor_node_position):
+        snr=energy_needed_for_transmission_data(4,10000)
+        r = np.linalg.norm(sensor_node_position - self.auv_position)
+        AL=Transmission_Loss(20,1.5,100*r)
+        NL=30
+        power_for_transmission=snr*(10**(AL/10))*(10**(NL/10))
+        duration=25
+        energy_for_tranmission=power_for_transmission*duration
+
+        return energy_for_tranmission
+
+
     def update_Age(self,node_selected_index):
         self.AoI_all_nodes[node_selected_index]=1
         for i in range(len(self.AoI_all_nodes)):

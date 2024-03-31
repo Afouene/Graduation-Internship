@@ -1,3 +1,4 @@
+
 import gym
 from gym import spaces
 import numpy as np
@@ -30,6 +31,13 @@ def Power_harvested(n,RL,RVS,Rp):
     P_har=0.7*P_available
 
     return P_har
+def in_sphere(self):
+        indices = []
+        for i, sensor_pos in enumerate(self.sensor_node_positions):
+            distance = np.linalg.norm(sensor_pos - self.auv_position)
+            if distance < np.sqrt(3):
+                indices.append(i)
+        return indices
 
 class AUVEnvironment(gym.Env):
     def __init__(self):
@@ -55,7 +63,7 @@ class AUVEnvironment(gym.Env):
         self.AoI_max=self.max_iterations/2
         self.prev_selected_node_data = None  
         self.reward_per_step=[]
-        self.action_space = spaces.MultiDiscrete([6,5,5])  
+        self.action_space = spaces.Discrete(6)  
         self.observation_space = spaces.Box(low=1, high=6, shape=(3,),dtype=int)
         self.reward_space = spaces.Box(low=np.array([0,0]), high=np.array([5000,5000]))
 
@@ -64,9 +72,7 @@ class AUVEnvironment(gym.Env):
 
     def step(self, action):
         reward=np.array([0,0])
-        print("afkafjafkjfa",action)
-
-        direction,selection_node_wet,selection_node_collect_data=action
+        direction=action
         possible_dir=self.get_possible_directions()
         if direction in possible_dir:
             self.auv_position += np.array([
@@ -82,10 +88,10 @@ class AUVEnvironment(gym.Env):
                     1 if direction == 2 else -1 if direction == 3 else 0,
                     1 if direction == 4 else -1 if direction == 5 else 0
                 ])
-            
-        selected_sensor_node = self.sensor_node_positions[selection_node_wet]
-        selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
-        received_power = self.compute_received_power(selected_sensor_node)
+        indices_inside_sphere = self.in_sphere()
+        for sensor_index in indices_inside_sphere:
+
+            received_power = self.compute_received_power(selected_sensor_node)
         reward[0]= np.sum(received_power)
         #print("hetha power",reward)
         #self.auv_position = np.clip(self.auv_position, 1, 5) # for auv to stay in the grid

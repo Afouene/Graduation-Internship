@@ -15,7 +15,7 @@ for episode in range(num_episodes):
     while not done : 
         auv_positions = [env.auv_position]      # Store AUV positions for plotting
         action = env.action_space.sample()
-        direction,selected_node,selection_node_data=action
+        direction,selected_node=action
         next_state, reward, done ,_= env.step(action)
         total_reward += reward
         
@@ -29,9 +29,8 @@ for episode in range(num_episodes):
         # Store AUV position for plotting
         auv_positions.append(env.auv_position)"""
     average_age_over_episodes.append(np.mean(env.reward_per_step))
-    print('Energy Harvested in 1 episode',env.cumulative_rewards)
     #print("This is aoi",env.reward_per_step)
-    average_energy_harvested_over_episodes.append(np.sum(env.cumulative_rewards))
+    average_energy_harvested_over_episodes.append(np.sum(env.energy_stored))
     #print("This is the power transfered to nodes",env.cumulative_rewards)
 
     #cumulative_rewards = env.get_cumulative_rewards()

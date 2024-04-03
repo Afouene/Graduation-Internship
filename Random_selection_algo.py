@@ -4,7 +4,7 @@ import numpy as np
 from environment import AUVEnvironment
 import gym
 total_rewards_over_episodes = []
-num_episodes = 1
+num_episodes = 100
 average_age_over_episodes= []
 average_energy_harvested_over_episodes=[]
 for episode in range(num_episodes):
@@ -30,9 +30,8 @@ for episode in range(num_episodes):
         auv_positions.append(env.auv_position)"""
     average_age_over_episodes.append(np.mean(env.reward_per_step))
     #print("This is aoi",env.reward_per_step)
-    average_energy_harvested_over_episodes.append(np.sum(env.energy_stored))
     #print("This is the power transfered to nodes",env.cumulative_rewards)
-
+    average_energy_harvested_over_episodes.append(env.energy_harvested)
     #cumulative_rewards = env.get_cumulative_rewards()
     """print("total reward for the episode is  ", total_reward)
     print("the aoi is",env.AoI_all_nodes)

@@ -65,7 +65,7 @@ class AUVEnvironment(gym.Env):
         self.action_space = spaces.MultiDiscrete([6,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=10, shape=(3,))
         self.energy_stored = [0] * self.num_devices 
-        
+        self.energy_harvested=0
         
     def step(self, action):
         reward=0
@@ -91,7 +91,8 @@ class AUVEnvironment(gym.Env):
         #selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
         harvested_energy = self.compute_harvested_energy(selected_sensor_node)
         #reward += harvested_energy
-        self.energy_stored[selection_node_wet] += harvested_energy  
+        self.energy_stored[selection_node_wet] += harvested_energy 
+        self.energy_harvested +=harvested_energy 
         E_n,e_values=self.indices_state_for_transmitting()
         
         """print("energy_stored",self.energy_stored)
@@ -106,7 +107,7 @@ class AUVEnvironment(gym.Env):
 
                 self.energy_stored[selection_node_wet] -=e_values[selection_node_wet]
                 AoI=self.update_Age(selection_node_wet)
-                reward -=3
+                reward -=2
             
             else :
 
@@ -137,7 +138,8 @@ class AUVEnvironment(gym.Env):
         self.max_iterations=100
         self.AoI_all_nodes=[1] * self.num_devices
         self.energy_stored = [0] * self.num_devices
-        
+        self.energy_harvested=0
+
 
         return self.auv_position
     
@@ -167,7 +169,7 @@ class AUVEnvironment(gym.Env):
     
 
     def energy_required_for_trans(self,sensor_node_position):
-        snr=snr_needed_for_transmission_data(4,5000)
+        snr=snr_needed_for_transmission_data(4,3000)
 
         avg_distance=0.5*(self.auv_position+self.prev_auv_position)
         r = np.linalg.norm(sensor_node_position - avg_distance)
@@ -245,19 +247,16 @@ class AUVEnvironment(gym.Env):
     
         self.screen.fill((255, 255, 255)) 
 
-    #  The Draw  of grid lines
         cell_size = self.window_size // 10
         for i in range(11):
             pygame.draw.line(self.screen, (100, 100, 100), (i * cell_size, 0), (i * cell_size, self.window_size), 1)
             pygame.draw.line(self.screen, (100, 100, 100), (0, i * cell_size), (self.window_size, i * cell_size), 1)
 
-    #  The Draw of  AUV
         auv_position = self.auv_position
         auv_x = (auv_position[0]-1 ) * cell_size + cell_size // 2
         auv_y = (auv_position[1] -1) * cell_size + cell_size // 2
         pygame.draw.circle(self.screen, (0, 0, 255), (auv_x, auv_y), cell_size // 4)
 
-    #  The Draw  of sensor nodes
         for sensor_node_pos in self.sensor_node_positions:
             node_x = (sensor_node_pos[0] -1) * cell_size + cell_size // 2
             node_y = (sensor_node_pos[1] -1) * cell_size + cell_size // 2

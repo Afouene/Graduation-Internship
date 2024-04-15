@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from environment import AUVEnvironment
+from setting_the_environment import AUVEnvironment
 import gym
 total_rewards_over_episodes = []
 num_episodes = 100
@@ -15,9 +15,10 @@ for episode in range(num_episodes):
     while not done : 
         auv_positions = [env.auv_position]      # Store AUV positions for plotting
         action = env.action_space.sample()
-        direction,selected_node=action
+        direction,selected_node,selection_node_data=action
         next_state, reward, done ,_= env.step(action)
-        total_reward += reward
+        total_reward += reward  
+      
         
         #env.render()
         #print("auv position",env.auv_position)
@@ -32,6 +33,13 @@ for episode in range(num_episodes):
     #print("This is aoi",env.reward_per_step)
     #print("This is the power transfered to nodes",env.cumulative_rewards)
     average_energy_harvested_over_episodes.append(env.energy_harvested)
+    """print("number of times the auv chosed a node",env.t)
+    print("number of times the auv chosed a node correctly",env.t1)
+    print("number of times the auv couldnt chose a node",env.f)"""
+
+
+
+
     #cumulative_rewards = env.get_cumulative_rewards()
     """print("total reward for the episode is  ", total_reward)
     print("the aoi is",env.AoI_all_nodes)

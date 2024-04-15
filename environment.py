@@ -91,8 +91,8 @@ class AUVEnvironment(gym.Env):
         #selected_sensor_node_collect_data=self.sensor_node_positions[selection_node_collect_data]
         harvested_energy = self.compute_harvested_energy(selected_sensor_node)
         #reward += harvested_energy
-        self.energy_stored[selection_node_wet] += harvested_energy 
-        self.energy_harvested +=harvested_energy 
+        self.energy_stored[selection_node_wet] += harvested_energy  
+        self.energy_harvested +=harvested_energy
         E_n,e_values=self.indices_state_for_transmitting()
         
         """print("energy_stored",self.energy_stored)
@@ -107,7 +107,7 @@ class AUVEnvironment(gym.Env):
 
                 self.energy_stored[selection_node_wet] -=e_values[selection_node_wet]
                 AoI=self.update_Age(selection_node_wet)
-                reward -=2
+                reward -=3
             
             else :
 
@@ -139,7 +139,6 @@ class AUVEnvironment(gym.Env):
         self.AoI_all_nodes=[1] * self.num_devices
         self.energy_stored = [0] * self.num_devices
         self.energy_harvested=0
-
 
         return self.auv_position
     

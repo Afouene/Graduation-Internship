@@ -13,7 +13,7 @@ for episode in range(num_episodes):
     while not done : 
         auv_positions = [env.auv_position]      # Store AUV positions for plotting
         action = env.action_space.sample()
-        direction,selected_node=action
+        direction,selected_node,selected_node_data=action
         next_state, reward, done ,_= env.step(action)
         total_reward += reward
         #env.render()

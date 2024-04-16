@@ -3,7 +3,7 @@ from setting_the_environment import AUVEnvironment
 import numpy as np
 import matplotlib.pyplot as plt
 
-model_path="logs/11/rl_model_255000_steps.zip"
+model_path="logs/12/rl_model_210000_steps.zip"
 model = PPO.load(model_path)
 
 
@@ -20,7 +20,7 @@ for episode in range(num_episodes):
         action, _ = model.predict(obs,deterministic=False)  
         obs, reward, done, _ = env.step(action)  
         total_reward += reward
-
+        print("occurence",env.occurence)
         #env.render()
         
 

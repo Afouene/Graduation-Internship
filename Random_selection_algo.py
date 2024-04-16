@@ -33,6 +33,7 @@ for episode in range(num_episodes):
     #print("This is aoi",env.reward_per_step)
     #print("This is the power transfered to nodes",env.cumulative_rewards)
     average_energy_harvested_over_episodes.append(env.energy_harvested)
+    print("occurence",env.occurence)
     """print("number of times the auv chosed a node",env.t)
     print("number of times the auv chosed a node correctly",env.t1)
     print("number of times the auv couldnt chose a node",env.f)"""

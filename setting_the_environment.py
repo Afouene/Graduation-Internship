@@ -65,9 +65,8 @@ class AUVEnvironment(gym.Env):
         self.max_iterations=100
 
         self.AoI_max=self.max_iterations/2
-        self.prev_auv_position=[3,3,3] 
         self.reward_per_step=[]
-        self.action_space = spaces.MultiDiscrete([6,5,5])  #  we have 6 directions + 5 for the selection of  sensor node actions
+        self.action_space = spaces.MultiDiscrete([6,self.num_devices,self.num_devices])  #  we have 6 directions + 5 for the selection of  sensor node actions
         self.observation_space = spaces.Box(low=1, high=10, shape=(3,))
         self.energy_stored = [0] * self.num_devices 
         self.energy_harvested=0
@@ -120,6 +119,8 @@ class AUVEnvironment(gym.Env):
                 self.f +=1"""
                 AoI=self.update_all_Age()
                 self.n +=1
+                
+
 
             
             else :
@@ -133,9 +134,16 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_data] +=1
              AoI=self.update_Age(selection_node_data)
              self.t +=1
+             if(self.occurence[selection_node_data]>15):
+                 reward -=2
 
+        num_zeros = sum(1 for x in self.occurence if x == 0)  # Counting zeros in occurence
 
         reward -=((np.sum(AoI)))/self.num_devices
+       
+
+        #reward -=10*max(0,(num_zeros/(self.num_devices)))
+        
         #reward -= 5*max(0,1-(self.t/self.n))
 
         self.reward_per_step.append(np.sum(AoI)/self.num_devices)
@@ -151,7 +159,7 @@ class AUVEnvironment(gym.Env):
 
     def reset(self):
 
-        self.auv_position = np.array([3, 3, 3])   
+        self.auv_position = np.array([5, 5,2])   
         self.max_iterations=100
         self.AoI_all_nodes=[1] * self.num_devices
         self.energy_stored = [0] * self.num_devices
@@ -161,14 +169,16 @@ class AUVEnvironment(gym.Env):
         self.f=0
         self.n=0
 
-        return self.auv_position
+        return     self.auv_position
     #np.hstack((self.auv_position,self.AoI_all_nodes,self.energy_stored))
+
    
 
     
     def _get_observation(self):
         
-        return self.auv_position
+        return     self.auv_position
+
     
     
     def compute_harvested_energy(self, sensor_node_position):

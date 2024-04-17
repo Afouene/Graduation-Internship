@@ -48,18 +48,18 @@ class AUVEnvironment(gym.Env):
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
             np.array([8, 8, 2]),
-            np.array([9, 1, 3]),
-            np.array([1, 6, 4]),
+            #np.array([9, 1, 3]),
+            #np.array([1, 6, 4]),
             np.array([8, 5, 3]),
-            np.array([6, 2, 2]),
-            np.array([4, 4, 3]),
+            #np.array([6, 2, 2]),
+            #np.array([4, 4, 3]),
           
 
 
            
 
         ]
-        self.num_devices=7
+        self.num_devices=3
         
         self.AoI_all_nodes=[1]*self.num_devices 
         self.max_iterations=100
@@ -134,8 +134,11 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_data] +=1
              AoI=self.update_Age(selection_node_data)
              self.t +=1
-             if(self.occurence[selection_node_data]>15):
+             """if(self.occurence[selection_node_data]>15):
+                 reward -=5"""
+             if(self.occurence[selection_node_data]>33):
                  reward -=2
+                
 
         num_zeros = sum(1 for x in self.occurence if x == 0)  # Counting zeros in occurence
 

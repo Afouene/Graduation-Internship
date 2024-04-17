@@ -3,13 +3,13 @@ from setting_the_environment import AUVEnvironment
 import numpy as np
 import matplotlib.pyplot as plt
 
-model_path="logs/12/rl_model_210000_steps.zip"
+model_path="logs/19/rl_model_185000_steps.zip"
 model = PPO.load(model_path)
 
 
 env = AUVEnvironment()
 
-num_episodes = 100
+num_episodes = 1000
 average_age_over_episodes= []
 average_energy_harvested_over_episodes=[]
 for episode in range(num_episodes):
@@ -37,5 +37,5 @@ for episode in range(num_episodes):
 
     #print("This is the power transfered to nodes",env.cumulative_rewards)
     #print("This the average reward",abs(np.mean((env.reward_per_step))))
-print("This is for the average age",np.mean(average_age_over_episodes))
-print("This is the average  cummulative energy harvested",np.mean(average_energy_harvested_over_episodes))
+print("This is for the average age for RL algorithm 10 nodes ",np.mean(average_age_over_episodes))
+print("This is the average  cummulative energy harvested for RL algorithm 10 nodes",np.mean(average_energy_harvested_over_episodes))

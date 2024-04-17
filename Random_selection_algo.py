@@ -34,8 +34,7 @@ for episode in range(num_episodes):
 
 
 
-print("This is for the average age",np.mean(average_age_over_episodes))
-print("This is the average cummulative power harvested",np.mean(average_energy_harvested_over_episodes))
-
+print("This is for the average age for RW  10 nodes ",np.mean(average_age_over_episodes))
+print("This is the average  cummulative energy harvested for RW 10 nodes",np.mean(average_energy_harvested_over_episodes))
 
 

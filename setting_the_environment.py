@@ -48,18 +48,23 @@ class AUVEnvironment(gym.Env):
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
             np.array([8, 8, 2]),
-            #np.array([9, 1, 3]),
-            #np.array([1, 6, 4]),
+            np.array([9, 1, 3]),
+            np.array([1, 6, 4]),
             np.array([8, 5, 3]),
-            #np.array([6, 2, 2]),
-            #np.array([4, 4, 3]),
+            np.array([4, 4, 3]),
+            np.array([6, 2, 2]),
+            np.array([3, 7, 2]),
+            np.array([5, 8, 4]),
+            np.array([6, 9, 3]),
+
+
           
 
 
            
 
         ]
-        self.num_devices=3
+        self.num_devices=10
         
         self.AoI_all_nodes=[1]*self.num_devices 
         self.max_iterations=100
@@ -67,7 +72,7 @@ class AUVEnvironment(gym.Env):
         self.AoI_max=self.max_iterations/2
         self.reward_per_step=[]
         self.action_space = spaces.MultiDiscrete([6,self.num_devices,self.num_devices])  #  we have 6 directions + 5 for the selection of  sensor node actions
-        self.observation_space = spaces.Box(low=1, high=10, shape=(3,))
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(23,))
         self.energy_stored = [0] * self.num_devices 
         self.energy_harvested=0
         self.t=0
@@ -124,7 +129,7 @@ class AUVEnvironment(gym.Env):
 
             
             else :
-                reward -=10
+                reward -=8
                 AoI=self.update_all_Age()
                 
 
@@ -134,15 +139,22 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_data] +=1
              AoI=self.update_Age(selection_node_data)
              self.t +=1
-             """if(self.occurence[selection_node_data]>15):
-                 reward -=5"""
-             if(self.occurence[selection_node_data]>33):
-                 reward -=2
-                
+           
+             
 
-        num_zeros = sum(1 for x in self.occurence if x == 0)  # Counting zeros in occurence
 
-        reward -=((np.sum(AoI)))/self.num_devices
+        sum_of_squares = sum(x**2 for x in self.occurence)
+        sum_of_values = sum(self.occurence)
+
+        Jain_index= ((sum_of_values**2)/(sum_of_squares*self.num_devices) )if sum_of_squares != 0 else 0
+
+        print("jain",Jain_index)
+        print("occurence",self.occurence)
+  
+
+       
+
+        reward -=(1-Jain_index)*(np.sum(AoI)/self.num_devices)
        
 
         #reward -=10*max(0,(num_zeros/(self.num_devices)))
@@ -172,15 +184,14 @@ class AUVEnvironment(gym.Env):
         self.f=0
         self.n=0
 
-        return     self.auv_position
-    #np.hstack((self.auv_position,self.AoI_all_nodes,self.energy_stored))
+        return     np.hstack((self.auv_position,self.AoI_all_nodes,self.energy_stored))
 
    
 
     
     def _get_observation(self):
         
-        return     self.auv_position
+        return     np.hstack((self.auv_position,self.AoI_all_nodes,self.energy_stored))
 
     
     

@@ -124,7 +124,7 @@ class AUVEnvironment(gym.Env):
                 self.f +=1"""
                 AoI=self.update_all_Age()
                 self.n +=1
-                
+                reward -=1
 
 
             
@@ -139,6 +139,8 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_data] +=1
              AoI=self.update_Age(selection_node_data)
              self.t +=1
+             if(self.occurence[selection_node_data] >9):
+                 reward -=10
            
              
 
@@ -148,14 +150,15 @@ class AUVEnvironment(gym.Env):
 
         Jain_index= ((sum_of_values**2)/(sum_of_squares*self.num_devices) )if sum_of_squares != 0 else 0
 
-        print("jain",Jain_index)
-        print("occurence",self.occurence)
-  
+       # print("jain",Jain_index)
+
+        #print("occ",self.occurence)
 
        
-
-        reward -=(1-Jain_index)*(np.sum(AoI)/self.num_devices)
-       
+        num_zeros = sum(1 for x in self.occurence if x == 0)  
+        
+        reward -=(1-Jain_index)*(np.sum(AoI)/self.num_devices)+num_zeros
+        
 
         #reward -=10*max(0,(num_zeros/(self.num_devices)))
         

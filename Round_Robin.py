@@ -22,7 +22,7 @@ if __name__ == "__main__":
     total_rewards_over_episodes_rr = []
     average_age_over_episodes_rr = []
     average_energy_harvested_over_episodes_rr = []
-    num_episodes = 1000
+    num_episodes = 100
 
     for episode in range(num_episodes):
         done = False
@@ -34,6 +34,9 @@ if __name__ == "__main__":
             action = agent.select_action()
             next_state, reward, done, _ = env.step(action)
             total_reward += reward
+        
+        print("occurence",env.occurence)
+
 
         average_age_over_episodes_rr.append(np.mean(env.reward_per_step))
         average_energy_harvested_over_episodes_rr.append(env.energy_harvested)

@@ -20,7 +20,7 @@ env=AUVEnvironment()
 
 
 
-checkpoint_callback = CheckpointCallback(save_freq=5000, save_path="./logs/42")
+checkpoint_callback = CheckpointCallback(save_freq=5000, save_path="./logs/43")
 eval_callback = EvalCallback(env, best_model_save_path="./logs/best_model",
                              log_path="./logs/results", eval_freq=500)
 

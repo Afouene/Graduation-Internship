@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 
 
-df = pd.read_csv(".\PPO_55.csv")
-df = df[df["Step"] <= 260000]
+df = pd.read_csv(".\PPO_19.csv")
+df = df[df["Step"] <= 955000]
 
 plt.plot(df["Step"], df["Value"])
 plt.xlabel("Step")

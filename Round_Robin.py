@@ -1,4 +1,9 @@
+
+
+
 from setting_the_environment import AUVEnvironment  
+
+
 import numpy as np
 
 
@@ -35,7 +40,7 @@ if __name__ == "__main__":
             next_state, reward, done, _ = env.step(action)
             total_reward += reward
         
-        print("occurence",env.occurence)
+        #print("occurence",env.occurence)
 
 
         average_age_over_episodes_rr.append(np.mean(env.reward_per_step))

@@ -48,17 +48,17 @@ class AUVEnvironment(gym.Env):
         self.sensor_node_positions = [
             np.array([1, 1, 1]),
             np.array([8, 8, 2]),
-            np.array([9, 1, 3]),
-            np.array([1, 6, 4]),
+            #np.array([9, 1, 3]),
+            #np.array([1, 6, 4]),
             np.array([8, 5, 3]),
             
-
+          
 
 
            
 
         ]
-        self.num_devices=5
+        self.num_devices=3
         
         self.AoI_all_nodes=[1]*self.num_devices 
         self.max_iterations=100
@@ -66,7 +66,7 @@ class AUVEnvironment(gym.Env):
         self.AoI_max=self.max_iterations/2
         self.reward_per_step=[]
         self.action_space = spaces.MultiDiscrete([6,self.num_devices,self.num_devices])  #  we have 6 directions + 5 for the selection of  sensor node actions
-        self.observation_space = spaces.Box(low=1, high=10, shape=(3,))
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(9,))
         self.energy_stored = [0] * self.num_devices 
         self.energy_harvested=0
         self.t=0
@@ -110,15 +110,20 @@ class AUVEnvironment(gym.Env):
         if selection_node_data not in available_indices_for_transmission:
             
             if (len(available_indices_for_transmission)==0):
-            
+                """selection_node_data= np.random.choice(available_indices_for_transmission)
+
+                self.energy_stored[selection_node_data] -=e_values[selection_node_data]
+                AoI=self.update_Age(selection_node_data)
+                reward -=3
+                self.f +=1"""
                 AoI=self.update_all_Age()
                 self.n +=1
-                
+                reward -=1
 
 
             
             else :
-                reward -=10
+                reward -=8
                 AoI=self.update_all_Age()
                 
 
@@ -128,13 +133,26 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_data] +=1
              AoI=self.update_Age(selection_node_data)
              self.t +=1
-             if(self.occurence[selection_node_data]>33):
-                 reward -=2
+             if(self.occurence[selection_node_data] >33):
+                 reward -10
+           
+             
 
-        num_zeros = sum(1 for x in self.occurence if x == 0)  # Counting zeros in occurence
 
-        reward -=((np.sum(AoI)))/self.num_devices
+        sum_of_squares = sum(x**2 for x in self.occurence)
+        sum_of_values = sum(self.occurence)
+
+        Jain_index= ((sum_of_values**2)/(sum_of_squares*self.num_devices) )if sum_of_squares != 0 else 0
+
+       # print("jain",Jain_index)
+
+        #print("occ",self.occurence)
+
        
+        num_zeros = sum(1 for x in self.occurence if x == 0)  
+        
+        reward -=(1-Jain_index)*(np.sum(AoI)/self.num_devices)+num_zeros
+        
 
         #reward -=10*max(0,(num_zeros/(self.num_devices)))
         
@@ -163,15 +181,14 @@ class AUVEnvironment(gym.Env):
         self.f=0
         self.n=0
 
-        return     self.auv_position
-    #np.hstack((self.auv_position,self.AoI_all_nodes,self.energy_stored))
+        return     np.hstack((self.auv_position,self.AoI_all_nodes,self.energy_stored))
 
    
 
     
     def _get_observation(self):
         
-        return     self.auv_position
+        return     np.hstack((self.auv_position,self.AoI_all_nodes,self.energy_stored))
 
     
     
@@ -291,7 +308,7 @@ class AUVEnvironment(gym.Env):
         if self.render_mode == "human":
             pygame.event.pump()
             self.clock.tick(self.metadata["render_fps"])
-            pygame.time.delay(600) 
+            pygame.time.delay(100) 
 
     def _render_frame(self):
         canvas = pygame.Surface((self.window_size, self.window_size))

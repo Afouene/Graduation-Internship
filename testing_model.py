@@ -3,7 +3,9 @@ from setting_the_environment import AUVEnvironment
 import numpy as np
 import matplotlib.pyplot as plt
 
-model_path="logs/19/rl_model_185000_steps.zip"
+#model_path="logs/37/rl_model_2800000_steps.zip"   5 nodes ppo 96
+model_path="logs/36/rl_model_2620000_steps.zip"
+
 model = PPO.load(model_path)
 
 
@@ -20,8 +22,10 @@ for episode in range(num_episodes):
         action, _ = model.predict(obs,deterministic=False)  
         obs, reward, done, _ = env.step(action)  
         total_reward += reward
+        
         print("occurence",env.occurence)
-        #env.render()
+        env.render()
+    
         
 
     """
@@ -37,5 +41,5 @@ for episode in range(num_episodes):
 
     #print("This is the power transfered to nodes",env.cumulative_rewards)
     #print("This the average reward",abs(np.mean((env.reward_per_step))))
-print("This is for the average age for RL algorithm 10 nodes ",np.mean(average_age_over_episodes))
-print("This is the average  cummulative energy harvested for RL algorithm 10 nodes",np.mean(average_energy_harvested_over_episodes))
+print("This is for the average age for RL algorithm  3 nodes ",np.mean(average_age_over_episodes))
+print("This is the average  cummulative energy harvested for RL algorithm 3 nodes",np.mean(average_energy_harvested_over_episodes))

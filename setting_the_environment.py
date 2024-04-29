@@ -56,6 +56,7 @@ class AUVEnvironment(gym.Env):
             np.array([3, 7, 2]),
             np.array([5, 8, 4]),
             np.array([6, 9, 3]),
+           
 
            
 
@@ -72,8 +73,8 @@ class AUVEnvironment(gym.Env):
 
         self.AoI_max=self.max_iterations/2
         self.reward_per_step=[]
-        self.action_space = spaces.MultiDiscrete([6,self.num_devices,self.num_devices])  #  we have 6 directions + 5 for the selection of  sensor node actions
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(23,))
+        self.action_space = spaces.MultiDiscrete([6,self.num_devices,self.num_devices]) 
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.num_devices*2+3 ,))
         self.energy_stored = [0] * self.num_devices 
         self.energy_harvested=0
         self.t=0
@@ -140,7 +141,7 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_data] +=1
              AoI=self.update_Age(selection_node_data)
              self.t +=1
-             if(self.occurence[selection_node_data] >7):
+             if(self.occurence[selection_node_data] >18):
                  reward -=10
            
              

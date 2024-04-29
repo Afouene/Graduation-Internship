@@ -3,7 +3,7 @@ from setting_the_environment import AUVEnvironment
 import numpy as np
 import matplotlib.pyplot as plt
 
-model_path="logs/30/rl_model_485000_steps.zip"
+model_path="logs/43/rl_model_550000_steps.zip"
 
 model = PPO.load(model_path)
 

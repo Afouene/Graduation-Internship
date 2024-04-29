@@ -28,6 +28,8 @@ if __name__ == "__main__":
     average_age_over_episodes_rr = []
     average_energy_harvested_over_episodes_rr = []
     num_episodes = 100
+    jain_index_over_episodes = []  
+
 
     for episode in range(num_episodes):
         done = False
@@ -41,10 +43,15 @@ if __name__ == "__main__":
             total_reward += reward
         
         #print("occurence",env.occurence)
+        sum_of_squares = sum(x**2 for x in env.occurence)
+        sum_of_values = sum(env.occurence)
 
+        Jain_index= ((sum_of_values**2)/(sum_of_squares*env.num_devices) )
+        jain_index_over_episodes.append(Jain_index)
 
         average_age_over_episodes_rr.append(np.mean(env.reward_per_step))
         average_energy_harvested_over_episodes_rr.append(env.energy_harvested)
 
     print("Average age for Round Robin with", env.num_devices, "nodes:", np.mean(average_age_over_episodes_rr))
     print("Average cumulative energy harvested for Round Robin with", env.num_devices, "nodes:", np.mean(average_energy_harvested_over_episodes_rr))
+    print("This is the average  Jain'fairness index for Round Robin algorithm ",env.num_devices," nodes",np.mean(jain_index_over_episodes))

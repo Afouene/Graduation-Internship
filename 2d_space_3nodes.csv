@@ -1,0 +1,2 @@
+id,project_name,experiment_description,epoch,start_time,duration(s),power_consumption(kWh),CO2_emissions(kg),CPU_name,GPU_name,OS,region/country,cost
+63912646-737d-4f9c-a10b-11bc8d549c8e,AUV Path learning,training the PPO model,N/A,2024-04-30 15:17:25,3549.2857115268707,0.01647329016423798,0.009397567259863331,"AMD Ryzen 7 5800H with Radeon Graphics/1 device(s), TDP:45.0",NVIDIA GeForce GTX 1650 1 device(s),Windows,SA/Mecca Region,0

@@ -53,9 +53,9 @@ class AUVEnvironment(gym.Env):
             np.array([8, 5, 3]),
             np.array([6, 2, 2]),
             np.array([4, 4, 3]),
-            np.array([3, 7, 2]),
-            np.array([5, 8, 4]),
-            np.array([6, 9, 3]),
+            #np.array([3, 7, 2]),
+            #np.array([5, 8, 4]),
+            #np.array([6, 9, 3]),
            
 
            
@@ -66,14 +66,15 @@ class AUVEnvironment(gym.Env):
            
 
         ]
-        self.num_devices=10
-        
+        self.num_devices=7
+        self.center_of_gravity = np.mean(self.sensor_node_positions, axis=0)
+
         self.AoI_all_nodes=[1]*self.num_devices 
         self.max_iterations=100
 
         self.AoI_max=self.max_iterations/2
         self.reward_per_step=[]
-        self.action_space = spaces.MultiDiscrete([6,self.num_devices,self.num_devices]) 
+        self.action_space = spaces.MultiDiscrete([6,self.num_devices]) 
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.num_devices*2+3 ,))
         self.energy_stored = [0] * self.num_devices 
         self.energy_harvested=0
@@ -83,7 +84,7 @@ class AUVEnvironment(gym.Env):
         self.occurence=[0]*self.num_devices
     def step(self, action):
         reward=0
-        direction,selection_node_wet,selection_node_data=action
+        direction,selection_node_wet=action
         possible_dir=self.get_possible_directions()
         if direction in possible_dir:
             self.auv_position += np.array([
@@ -115,7 +116,7 @@ class AUVEnvironment(gym.Env):
         print("e_values",e_values)"""
         #print("energy_before",self.energy_stored)
         available_indices_for_transmission = [i for i, val in enumerate(E_n) if val == 1]
-        if selection_node_data not in available_indices_for_transmission:
+        if selection_node_wet not in available_indices_for_transmission:
             
             if (len(available_indices_for_transmission)==0):
                 """selection_node_data= np.random.choice(available_indices_for_transmission)
@@ -131,17 +132,17 @@ class AUVEnvironment(gym.Env):
 
             
             else :
-                reward -=8
+                reward -=4
                 AoI=self.update_all_Age()
                 
 
         else:
             
-             self.energy_stored[selection_node_data] -=e_values[selection_node_data]
-             self.occurence[selection_node_data] +=1
-             AoI=self.update_Age(selection_node_data)
+             self.energy_stored[selection_node_wet] -=e_values[selection_node_wet]
+             self.occurence[selection_node_wet] +=1
+             AoI=self.update_Age(selection_node_wet)
              self.t +=1
-             if(self.occurence[selection_node_data] >18):
+             if(self.occurence[selection_node_wet] >14):
                  reward -=10
            
              
@@ -215,7 +216,9 @@ class AUVEnvironment(gym.Env):
 
         energy_harvested=P_harvested*duration
         return energy_harvested
-    
+    def seed(self, seed=None):
+        # Optionally implement the seed method to set the random seed
+        pass
 
     def energy_required_for_trans(self,sensor_node_position):
         snr=snr_needed_for_transmission_data(4,3000)
@@ -309,7 +312,12 @@ class AUVEnvironment(gym.Env):
             node_x = (sensor_node_pos[0] -1) * cell_size + cell_size // 2
             node_y = (sensor_node_pos[1] -1) * cell_size + cell_size // 2
             pygame.draw.rect(self.screen, (255, 0, 0), pygame.Rect(node_x - cell_size // 8, node_y - cell_size // 8, cell_size // 4, cell_size // 4))
-
+        
+        cog_x = int((self.center_of_gravity[0] - 1) * cell_size + cell_size // 2)
+        cog_y = int((self.center_of_gravity[1] - 1) * cell_size + cell_size // 2)
+        pygame.draw.circle(self.screen, (0, 255, 0), (cog_x, cog_y), cell_size // 4)
+        
+        # Update display
         pygame.display.update()
 
 

@@ -18,7 +18,7 @@ class RoundRobinAgent:
         direction = np.random.randint(6)  # Assuming 6 possible directions
         # Select the current node for both power transmission and data collection
         selected_node_index = self.current_node_index
-        action = (direction, selected_node_index, selected_node_index)
+        action = (direction, selected_node_index)
         # Move to the next node in a cyclic manner
         self.current_node_index = (self.current_node_index + 1) % self.num_devices
         return action

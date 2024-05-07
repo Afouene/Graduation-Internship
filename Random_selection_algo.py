@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from setting_the_environment import AUVEnvironment
+from new_env import AUVEnvironment
 import gym
 total_rewards_over_episodes = []
 num_episodes = 100
@@ -15,15 +15,15 @@ for episode in range(num_episodes):
     total_reward = 0
     while not done : 
         action = env.action_space.sample()
-        direction,selected_node,selection_node_data=action
+        direction_x,direction_y,direction_z,selected_node=action
         next_state, reward, done ,_= env.step(action)
         total_reward += reward  
       
-        
         #env.render()
-        #print("auv position",env.auv_position)
+        print("auv position",env.auv_position)
+        print("age",env.AoI_all_nodes)
         
-    average_age_over_episodes.append(np.mean(env.reward_per_step))
+    average_age_over_episodes.append(np.mean(env.AoI_all_nodes))
     #print("This is aoi",env.reward_per_step)
     #print("This is the power transfered to nodes",env.cumulative_rewards)
     average_energy_harvested_over_episodes.append(env.energy_harvested)
@@ -31,7 +31,7 @@ for episode in range(num_episodes):
     sum_of_squares = sum(x**2 for x in env.occurence)
     sum_of_values = sum(env.occurence)
 
-    Jain_index= ((sum_of_values**2)/(sum_of_squares*env.num_devices) )
+    Jain_index= ((sum_of_values**2)/(sum_of_squares*env.num_devices) )if sum_of_squares != 0 else 0
     jain_index_over_episodes.append(Jain_index)
 
 

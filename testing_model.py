@@ -11,7 +11,13 @@ import matplotlib.pyplot as plt
 #model_path='logs/56/rl_model_3975000_steps.zip' #5 nodes 2d
 
 #model_path='logs/62/rl_model_2000000_steps.zip' #3 nodes 2 d
-model_path="logs/67/rl_model_8720000_steps.zip" 
+model_path="logs/67/rl_model_8720000_steps.zip"  #7 nodes 2d
+model_path="logs/69/rl_model_10000000_steps.zip" # 10 nodes 2d
+model_path="logs/70/rl_model_8300000_steps.zip" # 7 nodes 2d
+model_path="logs/71/rl_model_3500000_steps.zip" # 5 nodes 2d
+
+
+
 
 
 model = PPO.load(model_path)

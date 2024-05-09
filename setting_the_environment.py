@@ -51,8 +51,8 @@ class AUVEnvironment(gym.Env):
             np.array([9, 1, 3]),
             np.array([1, 6, 4]),
             np.array([8, 5, 3]),
-            np.array([6, 2, 2]),
-            np.array([4, 4, 3]),
+            #np.array([6, 2, 2]),
+            #np.array([4, 4, 3]),
             #np.array([3, 7, 2]),
             #np.array([5, 8, 4]),
             #np.array([6, 9, 3]),
@@ -66,7 +66,7 @@ class AUVEnvironment(gym.Env):
            
 
         ]
-        self.num_devices=7
+        self.num_devices=5
         self.center_of_gravity = np.mean(self.sensor_node_positions, axis=0)
 
         self.AoI_all_nodes=[1]*self.num_devices 
@@ -142,7 +142,7 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_wet] +=1
              AoI=self.update_Age(selection_node_wet)
              self.t +=1
-             if(self.occurence[selection_node_wet] >14):
+             if(self.occurence[selection_node_wet] >19):
                  reward -=10
            
              

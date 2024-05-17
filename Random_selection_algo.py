@@ -1,13 +1,14 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from new_env import AUVEnvironment
+from setting_the_environment import AUVEnvironment
 import gym
 total_rewards_over_episodes = []
 num_episodes = 100
 average_age_over_episodes= []
 average_energy_harvested_over_episodes=[]
 jain_index_over_episodes = []  
+average_total_communication=[]
 
 for episode in range(num_episodes):
     done=False
@@ -15,13 +16,11 @@ for episode in range(num_episodes):
     total_reward = 0
     while not done : 
         action = env.action_space.sample()
-        direction_x,direction_y,direction_z,selected_node=action
+        direction_x,selected_node=action
         next_state, reward, done ,_= env.step(action)
         total_reward += reward  
       
         #env.render()
-        print("auv position",env.auv_position)
-        print("age",env.AoI_all_nodes)
         
     average_age_over_episodes.append(np.mean(env.AoI_all_nodes))
     #print("This is aoi",env.reward_per_step)
@@ -33,6 +32,7 @@ for episode in range(num_episodes):
 
     Jain_index= ((sum_of_values**2)/(sum_of_squares*env.num_devices) )if sum_of_squares != 0 else 0
     jain_index_over_episodes.append(Jain_index)
+    average_total_communication.append(np.sum(env.occurence))
 
 
 
@@ -42,6 +42,7 @@ for episode in range(num_episodes):
 print("This is for the average age for RW ",env.num_devices,"  nodes",np.mean(average_age_over_episodes))
 print("This is the average  cummulative energy harvested for RW to",env.num_devices," nodes ",np.mean(average_energy_harvested_over_episodes))
 print("This is the average  Jain'fairness index for RW algorithm ",env.num_devices," nodes",np.mean(jain_index_over_episodes))
+print("Average total nbr of communication  RW with",env.num_devices,"nodes ",np.mean(average_total_communication))
 
 """"
 plt.plot(range(1, num_episodes + 1), total_rewards_over_episodes)

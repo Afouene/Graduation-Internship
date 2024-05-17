@@ -51,11 +51,11 @@ class AUVEnvironment(gym.Env):
             np.array([9, 1, 3]),
             np.array([1, 6, 4]),
             np.array([8, 5, 3]),
-            #np.array([6, 2, 2]),
-            #np.array([4, 4, 3]),
-            #np.array([3, 7, 2]),
-            #np.array([5, 8, 4]),
-            #np.array([6, 9, 3]),
+            np.array([6, 2, 2]),
+            np.array([4, 4, 3]),
+            np.array([3, 7, 2]),
+            np.array([5, 8, 4]),
+            np.array([6, 9, 3]),
            
 
            
@@ -66,7 +66,7 @@ class AUVEnvironment(gym.Env):
            
 
         ]
-        self.num_devices=5
+        self.num_devices=10
         self.center_of_gravity = np.mean(self.sensor_node_positions, axis=0)
 
         self.AoI_all_nodes=[1]*self.num_devices 
@@ -142,7 +142,7 @@ class AUVEnvironment(gym.Env):
              self.occurence[selection_node_wet] +=1
              AoI=self.update_Age(selection_node_wet)
              self.t +=1
-             if(self.occurence[selection_node_wet] >19):
+             if(self.occurence[selection_node_wet] >9):
                  reward -=10
            
              
@@ -160,7 +160,7 @@ class AUVEnvironment(gym.Env):
        
         num_zeros = sum(1 for x in self.occurence if x == 0)  
         
-        reward -=(1-Jain_index)*(np.sum(AoI)/self.num_devices)+num_zeros
+        reward -=(1-Jain_index)*(np.sum(AoI)/self.num_devices)+2*num_zeros
         
 
         #reward -=10*max(0,(num_zeros/(self.num_devices)))

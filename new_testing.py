@@ -9,7 +9,9 @@ model_path="logs/3/rl_model_14640000_steps.zip"
 model_path="logs/3/rl_model_15000000_steps.zip" #this one is also good for 10
 model_path="logs/4/rl_model_9360000_steps.zip" # 21 may 7 nodes the first 7nodes try 
 model_path="logs/5/rl_model_12000000_steps.zip" # 21 may 7 nodes the first 7nodes try 
-
+model_path="logs/6/rl_model_11120000_steps.zip" # 22 may 7 nodes eh not bad one 
+model_path="logs/6/rl_model_8320000_steps.zip" # 
+model_path="logs/7/rl_model_15000000_steps.zip" # 7nodes best one ppo 8
 model = PPO.load(model_path)
 
 

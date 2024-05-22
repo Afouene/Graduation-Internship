@@ -65,9 +65,9 @@ class AUVEnvironment(gym.Env):
             np.array([8, 8, 2]),
             np.array([9, 1, 3]),
             np.array([1, 6, 4]),
-            np.array([8, 5, 3]),
-            np.array([6, 2, 2]),
-            np.array([4, 4, 3]),
+            np.array([9, 5, 3]),
+            np.array([6, 3, 2]),
+            np.array([2, 9, 3]),
             #np.array([3, 7, 2]),
             #np.array([5, 8, 4]),
             #np.array([6, 9, 3]),
@@ -138,7 +138,7 @@ class AUVEnvironment(gym.Env):
         Jain_index = ((sum_of_values**2) / (sum_of_squares * self.num_devices)) if sum_of_squares != 0 else 0
 
         num_zeros = sum(1 for x in self.occurence if x == 0)
-        reward -= (1 - Jain_index) * (np.sum(AoI) / self.num_devices) + num_zeros
+        reward -= (1 - Jain_index) * (np.sum(AoI) / self.num_devices) +2* num_zeros
 
         self.reward_per_step.append(np.sum(AoI) / self.num_devices)
         self.max_iterations -= 1

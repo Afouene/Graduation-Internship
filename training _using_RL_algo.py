@@ -2,7 +2,7 @@ from stable_baselines3 import PPO
 from stable_baselines3 import A2C
 
 from stable_baselines3.common.evaluation import evaluate_policy
-from setting_the_environment import AUVEnvironment  
+from new_env import AUVEnvironment  
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnNoModelImprovement
 from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback, EvalCallback
@@ -10,8 +10,7 @@ import gym
 import os 
 import eco2ai
 
-#tracker = eco2ai.Tracker(project_name="AUV Path learning", experiment_description="training the PPO model",file_name="continous_5nodes_batch.csv")
-tracker = eco2ai.Tracker(project_name="AUV Path learning", experiment_description="training the PPO model",file_name="2d13may_10nodes.csv")
+tracker = eco2ai.Tracker(project_name="AUV Path learning for 2d", experiment_description="training the PPO model2d",file_name="2d22may_7nodes_.csv")
 
 tracker.start()
 
@@ -30,7 +29,7 @@ if not os.path.exists(logdir):
 env = make_vec_env(AUVEnvironment, n_envs=8)  # Adjust the number of environments as needed
 
 
-checkpoint_callback = CheckpointCallback(save_freq=5000, save_path="./logs/74")
+checkpoint_callback = CheckpointCallback(save_freq=5000, save_path="./logs/5")
 eval_callback = EvalCallback(env, best_model_save_path="./logs/best_model",
                              log_path="./logs/results", eval_freq=500)
 
@@ -38,7 +37,7 @@ callback = CallbackList([checkpoint_callback, eval_callback])
 
 model = PPO("MlpPolicy",env=env,  n_steps=100 ,verbose=0,gamma=0.93,tensorboard_log=logdir,batch_size=100,ent_coef=0.01,learning_rate=0.0003)
 
-Timesteps=20000000
+Timesteps=12000000
 model.learn(total_timesteps=Timesteps,progress_bar=True,callback=callback)
 model.save(f"{models_dir}/{Timesteps}")
 env.close()

@@ -23,8 +23,7 @@ y_f = f(x_range)
 
 # Calculate f'(x) values
 y_f_prime = f_prime(x_range)
-print("f(0.2)=",f(0.2))
-print("f(0.8)",f(0.8))
+
 # Plot the function f(x)
 plt.figure(figsize=(10, 6))
 plt.plot(x_range, y_f, label='$f(x) = \log_{10}\left(\\frac{x}{1-x}\\right) - \log_{10}\left(2^{\\frac{4}{3000(1-x)}} - 1\\right)$', color='blue')

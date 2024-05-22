@@ -4,7 +4,7 @@ import numpy as np
 from new_env import AUVEnvironment
 import gym
 total_rewards_over_episodes = []
-num_episodes = 1
+num_episodes = 100
 average_age_over_episodes= []
 average_energy_harvested_over_episodes=[]
 jain_index_over_episodes = []  
@@ -20,7 +20,7 @@ for episode in range(num_episodes):
         next_state, reward, done ,_= env.step(action)
         total_reward += reward  
       
-        env.render()
+        #env.render()
         
     average_age_over_episodes.append(np.mean(env.AoI_all_nodes))
     #print("This is aoi",env.reward_per_step)

@@ -92,10 +92,8 @@ SL=Acoustic_source_level(2000,0.5,20)
 NL=30
 RVS=-150
 Rp=125
-f=20
+f=30
 c1=calcul_c1prime(0.7,2,SL,NL,RVS,Rp)
-snr=snr_needed_for_transmission_data(4,1000)
 
-c2=calcul_c2(snr,NL)
 c3=calcul_c3(f)
-print("c1=  ",c1,"  c2 =",c2,"  c3 =",c3)
+print("c1=  ",c1,"   c3 =",c3)

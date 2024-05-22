@@ -5,7 +5,6 @@ import pygame
 from scipy.optimize import bisect
 
 c1 = 0.03366340416928765
-c3 = 0.004133836796896648
 
 def signal_to_noise_ratio(SL, TL, NL):
     return SL - TL - NL
@@ -37,8 +36,11 @@ def f(x):
     term2 = np.log10(2**(c2 / (1 - x)) - 1)
     return term1 - term2
 
-def h(d):
+def h(d,f):
     log_term = 0 if d < 1 else 1.5 * np.log10(d)
+    c3=(0.11*(f**2/(f**2+1))
+            +44*(f**2/(f**2+4100))+2.75*pow(10,-4)*pow(f,2)+
+            0.003)*(10**(-3))
     return 0.2 * (log_term + d * c3) - np.log10(c1)
 
 def find_beta(y):
@@ -66,12 +68,12 @@ class AUVEnvironment(gym.Env):
             np.array([8, 5, 3]),
             np.array([6, 2, 2]),
             np.array([4, 4, 3]),
-            np.array([3, 7, 2]),
-            np.array([5, 8, 4]),
-            np.array([6, 9, 3]),
+            #np.array([3, 7, 2]),
+            #np.array([5, 8, 4]),
+            #np.array([6, 9, 3]),
         ]
 
-        self.num_devices = 10
+        self.num_devices = 7
 
         self.AoI_all_nodes = [1] * self.num_devices
         self.max_iterations = 100
@@ -80,7 +82,7 @@ class AUVEnvironment(gym.Env):
         self.AoI_max = self.max_iterations / 2
         self.reward_per_step = []
         self.action_space = spaces.MultiDiscrete([6, self.num_devices])  # we have 6 directions + 10 for the selection of sensor node actions
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(17,))
+        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.num_devices*2+3 ,))
         self.energy_stored = [0] * self.num_devices
         self.energy_harvested = 0
         self.t = 0
@@ -104,33 +106,33 @@ class AUVEnvironment(gym.Env):
 
         selected_sensor_node = self.sensor_node_positions[selection_node_wet]
         r = np.linalg.norm(selected_sensor_node - self.auv_position)
-        y = h(100*r)
+        y = h(100*r,f=40)
         beta = find_beta(y)
         if beta is None or beta < 0.1 or beta > 0.9:
-            beta = 1 
-        print("d=",r,"beta==",beta)
-        harvested_energy = self.compute_harvested_energy(selected_sensor_node,beta)
+            if(self.energy_stored[selection_node_wet] > self.energy_required_for_trans(r,0)):
+                beta=0
+            else:
+                beta=1
+        if(beta !=0 and beta!=1):
+            harvested_energy = self.compute_harvested_energy(r,beta+0.0001)
+        else :
+            harvested_energy = self.compute_harvested_energy(r,beta)
+
         self.energy_stored[selection_node_wet] += harvested_energy
         self.energy_harvested += harvested_energy
-        E_n, e_values = self.indices_state_for_transmitting(beta)
-        available_indices_for_transmission = [i for i, val in enumerate(E_n) if val == 1]
 
-        if selection_node_wet not in available_indices_for_transmission:
-            if len(available_indices_for_transmission) == 0:
-                AoI = self.update_all_Age()
-                self.n += 1
-                reward -= 1
-            else:
-                reward -= 4
-                AoI = self.update_all_Age()
-        else:
-            self.energy_stored[selection_node_wet] -= e_values[selection_node_wet]
+        if beta !=1:
             self.occurence[selection_node_wet] += 1
             AoI = self.update_Age(selection_node_wet)
-            self.t += 1
-            if self.occurence[selection_node_wet] > 8:
+            self.energy_stored[selection_node_wet] -= self.energy_required_for_trans(r,beta)
+            if(beta==0):
+                reward +=2
+            if self.occurence[selection_node_wet] > 14:
                 reward -= 10
 
+        else:
+            AoI = self.update_all_Age()
+            reward -= 4
         sum_of_squares = sum(x**2 for x in self.occurence)
         sum_of_values = sum(self.occurence)
         Jain_index = ((sum_of_values**2) / (sum_of_squares * self.num_devices)) if sum_of_squares != 0 else 0
@@ -163,12 +165,11 @@ class AUVEnvironment(gym.Env):
     def seed(self, seed=None):
         pass
 
-    def compute_harvested_energy(self, sensor_node_position,beta):
+    def compute_harvested_energy(self,r,beta):
         SL=Acoustic_source_level(2000,0.5,20)
         #avg_distance=0.5*(self.auv_position+self.prev_auv_position)
-        r = np.linalg.norm(sensor_node_position - self.auv_position)
         #print("auv pos",self.auv_position," sensor",sensor_node_position)
-        AL=Transmission_Loss(60,1.5,100*r)
+        AL=Transmission_Loss(40,1.5,100*r)
         NL=30
         RVS=-150
         Rp=125
@@ -179,14 +180,15 @@ class AUVEnvironment(gym.Env):
         energy_harvested=P_harvested*duration
         return energy_harvested
 
-    def energy_required_for_trans(self,sensor_node_position,beta):
+    def energy_required_for_trans(self,r,beta):
         if beta==1:
             snr = 0
+    
+
         else :
             snr = snr_needed_for_transmission_data(100 / (25 * (1 - beta)), 3000)
 
-        r = np.linalg.norm(sensor_node_position -self.auv_position)
-        AL=Transmission_Loss(20,1.5,100*r)
+        AL=Transmission_Loss(40,1.5,100*r)
         NL=30
         power_for_transmission=snr*(10**(AL/10))*(10**(NL/10))
         duration=25*(1-beta)
@@ -198,7 +200,8 @@ class AUVEnvironment(gym.Env):
         E_n = [0] * self.num_devices
         e_value = [0] * self.num_devices
         for indice in range(len(self.sensor_node_positions)):
-            e = self.energy_required_for_trans(self.sensor_node_positions[indice],beta)
+            r = np.linalg.norm(self.sensor_node_positions[indice] - self.auv_position)
+            e = self.energy_required_for_trans(r,beta)
             e_value[indice] = e
             if self.energy_stored[indice] > e:
                 E_n[indice] = 1

@@ -63,17 +63,17 @@ class AUVEnvironment(gym.Env):
         self.sensor_node_positions = [
             np.array([5, 3, 1]),
             np.array([8, 8, 2]),
-            np.array([9, 2, 3]),
-            np.array([1, 6, 4]),
-            np.array([9, 5, 3]),
-            np.array([2, 2, 2]),
+            #np.array([9, 2, 3]), #for 7
+            #np.array([1, 6, 4]), # for 5
+            #np.array([9, 5, 3]), # for 5
+            #np.array([2, 2, 2]), # for 7
             np.array([2, 9, 1]),
-            np.array([5, 6, 1]),
-            np.array([5, 10, 4]),
-            np.array([7,6, 3]),
+            #np.array([5, 6, 1]),
+            #np.array([5, 10, 4]),
+           # np.array([7,6, 3]),
         ]
 
-        self.num_devices = 10
+        self.num_devices = 3
 
         self.AoI_all_nodes = [1] * self.num_devices
         self.max_iterations = 100
@@ -127,7 +127,7 @@ class AUVEnvironment(gym.Env):
             self.energy_stored[selection_node_wet] -= self.energy_required_for_trans(r,beta)
             if(beta==0):
                 reward +=2
-            if self.occurence[selection_node_wet] > 8:
+            if self.occurence[selection_node_wet] > 33:
                 reward -= 10
 
         else:

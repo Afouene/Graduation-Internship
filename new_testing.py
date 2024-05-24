@@ -15,6 +15,7 @@ model_path="logs/7/rl_model_15000000_steps.zip" # 7nodes best one ppo 8
 model_path="logs/8/rl_model_10000000_steps.zip" # 5nodes best one ppo 9
 model_path="logs/9/rl_model_20000000_steps.zip" # 10nodes best one log 9ppo 10
 model_path="logs/10/rl_model_2080000_steps.zip" # 3nodes best one ppo 11
+model_path="logs/11/rl_model_13240000_steps.zip" # 7nodes best one ppo 12
 
 model = PPO.load(model_path)
 

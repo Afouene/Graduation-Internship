@@ -10,7 +10,7 @@ import gym
 import os 
 import eco2ai
 
-tracker = eco2ai.Tracker(project_name="AUV Path learning for 2d", experiment_description="training the PPO model2d",file_name="2d23may_3nodes_changingpos_2numzeros_.csv")
+tracker = eco2ai.Tracker(project_name="AUV Path learning for 2d", experiment_description="training the PPO model2d",file_name="2d24may_7nodes__2numzeros_.csv")
 
 tracker.start()
 
@@ -29,7 +29,7 @@ if not os.path.exists(logdir):
 env = make_vec_env(AUVEnvironment, n_envs=8)  # Adjust the number of environments as needed
 
 
-checkpoint_callback = CheckpointCallback(save_freq=5000, save_path="./logs/10")
+checkpoint_callback = CheckpointCallback(save_freq=5000, save_path="./logs/11")
 eval_callback = EvalCallback(env, best_model_save_path="./logs/best_model",
                              log_path="./logs/results", eval_freq=500)
 
@@ -37,7 +37,7 @@ callback = CallbackList([checkpoint_callback, eval_callback])
 
 model = PPO("MlpPolicy",env=env,  n_steps=100 ,verbose=0,gamma=0.93,tensorboard_log=logdir,batch_size=100,ent_coef=0.01,learning_rate=0.0003)
 
-Timesteps=5000000
+Timesteps=15000000
 model.learn(total_timesteps=Timesteps,progress_bar=True,callback=callback)
 model.save(f"{models_dir}/{Timesteps}")
 env.close()

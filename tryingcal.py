@@ -25,28 +25,29 @@ def Power_harvested(n, RL, RVS, Rp):
 
 def snr_needed_for_transmission_data(system_throughput, Bandiwdth):
     return 2**(system_throughput / Bandiwdth) - 1
-def compute_harvested_energy(r,beta):
-    r=r/100
-    SL = Acoustic_source_level(2000, 0.5, 20)
-    AL = Transmission_Loss(20, 1.5, 100 * r)
-    NL = 30
-    RVS = -150
-    Rp = 125
-    duration = 25 * beta
-    RL = signal_to_noise_ratio(SL, AL, NL)
-    P_harvested = Power_harvested(2, RL, RVS, Rp)
-    energy_harvested = P_harvested * duration
-    return energy_harvested
+def compute_harvested_energy(r):
+        SL=Acoustic_source_level(2000,0.5,20)
+        #avg_distance=0.5*(self.auv_position+self.prev_auv_position)
+        #print("auv pos",self.auv_position," sensor",sensor_node_position)
+        AL=Transmission_Loss(40,1.5,100*r)
+        NL=30
+        RVS=-150
+        Rp=125
+        duration=25 #25 seconds
+        RL=signal_to_noise_ratio(SL,AL,NL)
+        P_harvested=Power_harvested(2,RL,RVS,Rp)
 
-def energy_required_for_trans(r, beta):
-    r=r/100
-    snr = snr_needed_for_transmission_data(100 / (25 * (1 - beta)), 3000)
-    AL = Transmission_Loss(20, 1.5, 100 * r)
+        energy_harvested=P_harvested*duration
+        return energy_harvested
+
+def energy_required_for_trans(r):
+    snr = snr_needed_for_transmission_data(100 / (25 ), 3000)
+    AL = Transmission_Loss(30, 1.5, 100 * r)
     NL = 30
     power_for_transmission = snr * 10**(AL / 10) * 10**(NL / 10)
-    duration = 25 * (1 - beta)
+    duration = 25 
     energy_for_transmission = power_for_transmission * duration
     return energy_for_transmission
 
-print("energy harvested",compute_harvested_energy(r=424.2640687119285,beta=0.37843181211937915))
-print("energy required",energy_required_for_trans(r=424.2640687119285 ,beta=0.37843181211937915))
+print("energy harvested",compute_harvested_energy(r=5))
+print("energy required",energy_required_for_trans(r=5))

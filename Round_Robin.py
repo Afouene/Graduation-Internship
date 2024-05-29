@@ -1,7 +1,7 @@
 
 
 
-from setting_the_environment import AUVEnvironment  
+from new_env2d import AUVEnvironment  
 
 
 import numpy as np
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         average_total_communication.append(np.sum(env.occurence))
         
         
-        Jain_index= ((sum_of_values**2)/(sum_of_squares*env.num_devices) )
+        Jain_index= ((sum_of_values**2)/(sum_of_squares*env.num_devices) )if sum_of_squares != 0 else 0
         jain_index_over_episodes.append(Jain_index)
 
         average_age_over_episodes_rr.append(np.mean(env.reward_per_step))
